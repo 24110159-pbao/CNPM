@@ -1,29 +1,36 @@
 package com.example.ecommerce.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Entity
+@Table(
+        name = "categories",
+        indexes = {
+                @Index(name = "idx_categories_name", columnList = "name")
+        }
+)
 @Getter
 @Setter
-@Entity
 @NoArgsConstructor
-@Table(name = "categories")
+@AllArgsConstructor
+@Builder
 public class Category {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true, length = 100)
     private String name;
 
-    private String description;
-
-    @OneToMany(mappedBy = "category")// đây đồng thời là tên thuộc tính của product
-    private List<Product>  products = new ArrayList<>();
+    @OneToMany(
+            mappedBy = "category",
+            fetch = FetchType.LAZY
+    )
+    @Builder.Default
+    private List<Product> products = new ArrayList<>();
 }
