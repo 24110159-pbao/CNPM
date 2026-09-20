@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<nav th:fragment="navbar"
+     class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+
+    <div class="container">
+
+        <!-- Logo -->
+        <a class="navbar-brand fw-bold text-primary"
+           th:href="@{/}">
+            E-Commerce
+        </a>
+
+        <!-- Mobile button -->
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar content -->
+        <div class="collapse navbar-collapse"
+             id="mainNavbar">
+
+            <!-- Left -->
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:href="@{/}">
+                        Trang chủ
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:href="@{/products}">
+                        Sản phẩm
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:href="@{/categories}">
+                        Danh mục
+                    </a>
+                </li>
+
+            </ul>
+
+            <!-- Search -->
+            <form class="d-flex me-3"
+                  th:action="@{/products}"
+                  method="get">
+
+                <input class="form-control me-2"
+                       type="search"
+                       name="keyword"
+                       placeholder="Tìm sản phẩm..."
+                       aria-label="Search">
+
+                <button class="btn btn-outline-primary"
+                        type="submit">
+                    Tìm
+                </button>
+
+            </form>
+
+            <!-- Authentication -->
+            <div class="d-flex gap-2">
+
+                <a class="btn btn-outline-primary"
+                   th:href="@{/login}">
+                    Đăng nhập
+                </a>
+
+                <a class="btn btn-primary"
+                   th:href="@{/register}">
+                    Đăng ký
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+
+</nav>
+
+</body>
+</html>

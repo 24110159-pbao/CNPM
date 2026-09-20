@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<div th:fragment="product-card(product)"
+     class="card h-100 border-0 shadow-sm">
+
+    <!-- Product image -->
+    <a th:href="@{/products/{id}(id=${product.id})}"
+       class="text-decoration-none">
+
+        <div class="ratio ratio-1x1 bg-light">
+
+            <img th:if="${product.imageUrl != null
+                         and !product.imageUrl.isEmpty()}"
+                 th:src="${product.imageUrl}"
+                 th:alt="${product.name}"
+                 class="card-img-top object-fit-cover">
+
+            <div th:unless="${product.imageUrl != null
+                             and !product.imageUrl.isEmpty()}"
+                 class="d-flex align-items-center justify-content-center">
+
+                <span class="text-muted">
+                    Không có hình ảnh
+                </span>
+
+            </div>
+
+        </div>
+
+    </a>
+
+    <!-- Product information -->
+    <div class="card-body d-flex flex-column">
+
+        <!-- Category -->
+        <small class="text-muted mb-1"
+               th:text="${product.category.name}">
+            Category
+        </small>
+
+        <!-- Name -->
+        <h5 class="card-title">
+
+            <a th:href="@{/products/{id}(id=${product.id})}"
+               th:text="${product.name}"
+               class="text-dark text-decoration-none">
+
+                Product name
+
+            </a>
+
+        </h5>
+
+        <!-- Price -->
+        <p class="card-text text-danger fw-bold fs-5 mb-2"
+           th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+
+            0 ₫
+
+        </p>
+
+        <!-- Stock -->
+        <small class="text-muted mb-3"
+               th:if="${product.stock > 0}"
+               th:text="'Còn ' + ${product.stock} + ' sản phẩm'">
+
+            Còn sản phẩm
+
+        </small>
+
+        <small class="text-danger mb-3"
+               th:if="${product.stock == 0}">
+
+            Hết hàng
+
+        </small>
+
+        <!-- Detail button -->
+        <div class="mt-auto">
+
+            <a th:href="@{/products/{id}(id=${product.id})}"
+               class="btn btn-outline-primary w-100">
+
+                Xem chi tiết
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
