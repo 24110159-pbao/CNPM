@@ -10,8 +10,11 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
         name = "payments",
-        indexes = {
-                @Index(name = "idx_payments_transaction_no", columnList = "transaction_no")
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_payments_order",
+                        columnNames = "order_id"
+                )
         }
 )
 @Getter
@@ -25,18 +28,12 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /*
-     * Order 1 - 1 Payment
-     */
-    @OneToOne(
-            fetch = FetchType.LAZY,
-            optional = false
-    )
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "order_id",
             nullable = false,
             unique = true,
-            foreignKey = @ForeignKey(name = "fk_payment_order")
+            foreignKey = @ForeignKey(name = "fk_payments_order")
     )
     private Order order;
 
@@ -49,13 +46,20 @@ public class Payment {
     @Builder.Default
     private PaymentStatus status = PaymentStatus.PENDING;
 
-    @Column(name = "transaction_no", length = 100)
+    @Column(length = 100)
     private String transactionNo;
 
-    @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
-    @Column(name = "created_at", nullable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+
+        if (status == null) {
+            status = PaymentStatus.PENDING;
+        }
+    }
 }

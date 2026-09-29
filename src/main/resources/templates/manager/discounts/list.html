@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Mã giảm giá - Manager</title></head>
+<body>
+<h1>Quản lý Mã giảm giá</h1>
+<a href="/manager/dashboard">Dashboard</a> |
+<a href="/manager/discounts/create">+ Thêm mã</a>
+<hr>
+<div th:if="${success}" style="color:green" th:text="${success}"></div>
+<div th:if="${error}" style="color:red" th:text="${error}"></div>
+
+<table border="1" cellpadding="8">
+  <thead>
+    <tr>
+      <th>ID</th><th>Mã</th><th>Giảm (%)</th><th>Số lượng</th><th>Đã dùng</th>
+      <th>Bắt đầu</th><th>Kết thúc</th><th>Hành động</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="d : ${discounts.content}">
+      <td th:text="${d.id}"></td>
+      <td th:text="${d.code}"></td>
+      <td th:text="${d.discountValue}"></td>
+      <td th:text="${d.quantity}"></td>
+      <td th:text="${d.usedCount}"></td>
+      <td th:text="${#temporals.format(d.startAt, 'dd/MM/yyyy HH:mm')}"></td>
+      <td th:text="${#temporals.format(d.endAt, 'dd/MM/yyyy HH:mm')}"></td>
+      <td>
+        <a th:href="@{/manager/discounts/{id}/edit(id=${d.id})}">Sửa</a>
+        <form th:action="@{/manager/discounts/{id}/delete(id=${d.id})}" method="post" style="display:inline"
+              onsubmit="return confirm('Xóa mã này?')">
+          <button type="submit">Xóa</button>
+        </form>
+      </td>
+    </tr>
+    <tr th:if="${discounts.empty}">
+      <td colspan="8">Chưa có mã giảm giá.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div th:if="${discounts.totalPages > 1}">
+  <span th:each="i : ${#numbers.sequence(0, discounts.totalPages - 1)}">
+    <a th:href="@{/manager/discounts(page=${i})}" th:text="${i + 1}"
+       th:style="${i == discounts.number} ? 'font-weight:bold' : ''"></a>
+  </span>
+</div>
+</body>
+</html>

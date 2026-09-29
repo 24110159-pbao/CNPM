@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header('Đánh giá sản phẩm')}"></head>
+<body class="bg-light">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/messages :: messages}"></div>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h3 class="card-title text-center fw-bold mb-3">Đánh giá sản phẩm</h3>
+
+                    <!-- Sản phẩm đang đánh giá -->
+                    <div th:if="${product != null}" class="d-flex align-items-center bg-light p-3 rounded mb-4">
+                        <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}" th:src="${product.imageUrl}" class="me-3 rounded border" style="width: 60px; height: 60px; object-fit: cover;">
+                        <div>
+                            <h5 class="mb-1" th:text="${product.name}">Tên sản phẩm</h5>
+                            <span class="text-danger fw-bold" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}"></span>
+                        </div>
+                    </div>
+
+                    <form th:action="@{/reviews/create}" method="post">
+                        <input type="hidden" name="orderId" th:value="${orderId}">
+                        <input type="hidden" name="productId" th:value="${productId}">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Chất lượng sản phẩm (Sao):</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check" th:each="r : ${#numbers.sequence(5, 1, -1)}">
+                                    <input class="form-check-input" type="radio" name="rating" th:id="'star' + ${r}" th:value="${r}" th:checked="${r == 5}">
+                                    <label class="form-check-label text-warning fw-bold" th:for="'star' + ${r}">
+                                        <span th:text="${r} + ' ★'"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="comment" class="form-label fw-bold">Nhận xét của bạn:</label>
+                            <textarea id="comment" name="comment" class="form-control" rows="4" required placeholder="Chia sẻ cảm nhận của bạn về chất lượng sản phẩm, dịch vụ giao hàng..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning w-100 py-2 fw-bold">Gửi đánh giá</button>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <a th:href="@{/orders/{id}(id=${orderId})}" class="text-decoration-none text-muted">&laquo; Hủy và quay lại đơn hàng</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

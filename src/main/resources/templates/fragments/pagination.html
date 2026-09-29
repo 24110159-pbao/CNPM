@@ -1,82 +1,18 @@
 <!DOCTYPE html>
-<html lang="vi"
-      xmlns:th="http://www.thymeleaf.org">
-
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
-
-<nav th:fragment="pagination(page, keyword, categoryId, minPrice, maxPrice)"
-     th:if="${page.totalPages > 1}"
-     aria-label="Product pagination">
-
+<nav th:fragment="pagination(page, baseUrl)" th:if="${page != null and page.totalPages > 1}" class="mt-4">
     <ul class="pagination justify-content-center">
-
-
-        <!-- Previous -->
-        <li class="page-item"
-            th:classappend="${page.first} ? 'disabled'">
-
-            <a class="page-link"
-               th:href="@{/products(
-                   page=${page.number - 1},
-                   keyword=${keyword},
-                   categoryId=${categoryId},
-                   minPrice=${minPrice},
-                   maxPrice=${maxPrice}
-               )}"
-               aria-label="Previous">
-
-                &laquo;
-
-            </a>
-
+        <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+            <a class="page-link" th:href="@{${baseUrl}(page=${page.number - 1})}">&laquo; Trước</a>
         </li>
-
-
-        <!-- Page numbers -->
-        <li class="page-item"
-            th:each="pageNumber : ${#numbers.sequence(0, page.totalPages - 1)}"
-            th:classappend="${pageNumber == page.number} ? 'active'">
-
-            <a class="page-link"
-               th:href="@{/products(
-                   page=${pageNumber},
-                   keyword=${keyword},
-                   categoryId=${categoryId},
-                   minPrice=${minPrice},
-                   maxPrice=${maxPrice}
-               )}"
-               th:text="${pageNumber + 1}">
-
-                1
-
-            </a>
-
+        <li class="page-item" th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}" th:classappend="${i == page.number} ? 'active'">
+            <a class="page-link" th:href="@{${baseUrl}(page=${i})}" th:text="${i + 1}">1</a>
         </li>
-
-
-        <!-- Next -->
-        <li class="page-item"
-            th:classappend="${page.last} ? 'disabled'">
-
-            <a class="page-link"
-               th:href="@{/products(
-                   page=${page.number + 1},
-                   keyword=${keyword},
-                   categoryId=${categoryId},
-                   minPrice=${minPrice},
-                   maxPrice=${maxPrice}
-               )}"
-               aria-label="Next">
-
-                &raquo;
-
-            </a>
-
+        <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+            <a class="page-link" th:href="@{${baseUrl}(page=${page.number + 1})}">Sau &raquo;</a>
         </li>
-
     </ul>
-
 </nav>
-
 </body>
 </html>

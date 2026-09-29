@@ -3,6 +3,7 @@ package com.example.ecommerce.repository;
 import com.example.ecommerce.entity.DiscountCode;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface DiscountCodeRepository
@@ -12,7 +13,9 @@ public interface DiscountCodeRepository
 
     boolean existsByCodeIgnoreCase(String code);
 
-    Optional<DiscountCode> findByCodeIgnoreCaseAndActiveTrue(
-            String code
+    Optional<DiscountCode> findByCodeIgnoreCaseAndStartAtLessThanEqualAndEndAtGreaterThanEqual(
+            String code,
+            LocalDateTime now1,
+            LocalDateTime now2
     );
 }

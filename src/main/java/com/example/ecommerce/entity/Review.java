@@ -10,17 +10,13 @@ import java.time.LocalDateTime;
         name = "reviews",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_review_user_product_order",
+                        name = "uk_reviews_user_product_order",
                         columnNames = {
                                 "user_id",
                                 "product_id",
                                 "order_id"
                         }
                 )
-        },
-        indexes = {
-                @Index(name = "idx_reviews_product", columnList = "product_id"),
-                @Index(name = "idx_reviews_user", columnList = "user_id")
         }
 )
 @Getter
@@ -38,7 +34,7 @@ public class Review {
     @JoinColumn(
             name = "user_id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_review_user")
+            foreignKey = @ForeignKey(name = "fk_reviews_user")
     )
     private User user;
 
@@ -46,7 +42,7 @@ public class Review {
     @JoinColumn(
             name = "product_id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_review_product")
+            foreignKey = @ForeignKey(name = "fk_reviews_product")
     )
     private Product product;
 
@@ -54,7 +50,7 @@ public class Review {
     @JoinColumn(
             name = "order_id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_review_order")
+            foreignKey = @ForeignKey(name = "fk_reviews_order")
     )
     private Order order;
 
@@ -64,7 +60,11 @@ public class Review {
     @Column(columnDefinition = "TEXT")
     private String comment;
 
-    @Column(name = "created_at", nullable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 }

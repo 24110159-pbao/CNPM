@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header('Truy cập bị từ chối - 403')}"></head>
+<body class="bg-light">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container my-5 text-center">
+    <div class="py-5">
+        <h1 class="display-1 text-danger fw-bold">403</h1>
+        <h3 class="mb-3">Từ chối quyền truy cập!</h3>
+        <p class="text-muted mb-4">Bạn không có quyền hạn truy cập vào tài nguyên hoặc khu vực quản trị này.</p>
+        <a th:href="@{/}" class="btn btn-primary">Quay về Trang chủ</a>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Danh mục - Manager</title></head>
+<body>
+<h1>Quản lý Danh mục</h1>
+<a href="/manager/dashboard">Dashboard</a>
+<hr>
+<div th:if="${success}" style="color:green" th:text="${success}"></div>
+<div th:if="${error}" style="color:red" th:text="${error}"></div>
+
+<h2>Thêm danh mục mới</h2>
+<form action="/manager/categories/create" method="post">
+  <input type="text" name="name" placeholder="Tên danh mục" required>
+  <button type="submit">Thêm</button>
+</form>
+
+<h2>Danh sách</h2>
+<table border="1" cellpadding="8">
+  <thead>
+    <tr><th>ID</th><th>Tên</th><th>Hành động</th></tr>
+  </thead>
+  <tbody>
+    <tr th:each="c : ${categories}">
+      <td th:text="${c.id}"></td>
+      <td>
+        <form th:action="@{/manager/categories/{id}/edit(id=${c.id})}" method="post" style="display:inline">
+          <input type="text" name="name" th:value="${c.name}" required>
+          <button type="submit">Lưu</button>
+        </form>
+      </td>
+      <td>
+        <form th:action="@{/manager/categories/{id}/delete(id=${c.id})}" method="post" style="display:inline"
+              onsubmit="return confirm('Xóa danh mục này?')">
+          <button type="submit">Xóa</button>
+        </form>
+      </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(categories)}">
+      <td colspan="3">Chưa có danh mục.</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

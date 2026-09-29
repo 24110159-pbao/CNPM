@@ -5,14 +5,12 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(
         name = "users",
-        indexes = {
-                @Index(name = "idx_users_email", columnList = "email")
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_users_email", columnNames = "email")
         }
 )
 @Getter
@@ -38,7 +36,7 @@ public class User {
     @Column(length = 20)
     private String phone;
 
-    @Column(length = 255)
+    @Column(columnDefinition = "TEXT")
     private String address;
 
     @Enumerated(EnumType.STRING)
@@ -46,49 +44,21 @@ public class User {
     @Builder.Default
     private Role role = Role.USER;
 
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
     @Column(nullable = false)
-    @Builder.Default
-    private Boolean enabled = true;
+    private LocalDateTime updatedAt;
 
-    @Column(name = "created_at", nullable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+    }
 
-    /*
-     * User 1 - 1 Cart
-     */
-    @OneToOne(
-            mappedBy = "user"
-    )
-    private Cart cart;
-
-    /*
-     * User 1 - N Orders
-     */
-    @OneToMany(
-            mappedBy = "user",
-            fetch = FetchType.LAZY
-    )
-    @Builder.Default
-    private List<Order> orders = new ArrayList<>();
-
-    /*
-     * User 1 - N Reviews
-     */
-    @OneToMany(
-            mappedBy = "user",
-            fetch = FetchType.LAZY
-    )
-    @Builder.Default
-    private List<Review> reviews = new ArrayList<>();
-
-    /*
-     * User 1 - N Notifications
-     */
-    @OneToMany(
-            mappedBy = "user",
-            fetch = FetchType.LAZY
-    )
-    @Builder.Default
-    private List<Notification> notifications = new ArrayList<>();
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

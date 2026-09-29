@@ -1,16 +1,18 @@
 package com.example.ecommerce.repository;
 
 import com.example.ecommerce.entity.Payment;
+import com.example.ecommerce.enums.PaymentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface PaymentRepository
-        extends JpaRepository<Payment, Long> {
+public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findByOrderId(Long orderId);
 
     Optional<Payment> findByTransactionNo(String transactionNo);
 
     boolean existsByOrderId(Long orderId);
+
+    long countByStatus(PaymentStatus status);
 }

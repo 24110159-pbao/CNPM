@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Mã giảm giá - Manager</title></head>
+<body>
+<h1 th:text="${discount != null} ? 'Sửa mã giảm giá' : 'Thêm mã giảm giá'">Form mã giảm giá</h1>
+<a href="/manager/discounts">← Quay lại</a>
+<hr>
+<div th:if="${error}" style="color:red" th:text="${error}"></div>
+
+<form th:action="${discount != null} ? @{/manager/discounts/{id}/edit(id=${discount.id})} : @{/manager/discounts/create}"
+      method="post">
+  <div>
+    <label>Mã code:</label><br>
+    <input type="text" name="code" required th:value="${discount?.code}" style="text-transform:uppercase">
+  </div>
+  <div>
+    <label>Giảm giá (%):</label><br>
+    <input type="number" name="discountValue" min="1" max="100" required th:value="${discount?.discountValue}">
+  </div>
+  <div>
+    <label>Số lượng:</label><br>
+    <input type="number" name="quantity" min="1" required th:value="${discount?.quantity}">
+  </div>
+  <div>
+    <label>Ngày bắt đầu:</label><br>
+    <input type="datetime-local" name="startAt" required
+           th:value="${discount?.startAt != null} ? ${#temporals.format(discount.startAt, 'yyyy-MM-dd''T''HH:mm')} : ''">
+  </div>
+  <div>
+    <label>Ngày kết thúc:</label><br>
+    <input type="datetime-local" name="endAt" required
+           th:value="${discount?.endAt != null} ? ${#temporals.format(discount.endAt, 'yyyy-MM-dd''T''HH:mm')} : ''">
+  </div>
+  <br>
+  <button type="submit" th:text="${discount != null} ? 'Cập nhật' : 'Tạo mã'">Lưu</button>
+</form>
+</body>
+</html>

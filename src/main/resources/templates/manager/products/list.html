@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Sản phẩm - Manager</title></head>
+<body>
+<h1>Quản lý Sản phẩm</h1>
+<nav>
+  <a href="/manager/dashboard">Dashboard</a> |
+  <a href="/manager/products/create">+ Thêm sản phẩm</a>
+</nav>
+<hr>
+<div th:if="${success}" style="color:green" th:text="${success}"></div>
+<div th:if="${error}" style="color:red" th:text="${error}"></div>
+
+<table border="1" cellpadding="8">
+  <thead>
+    <tr>
+      <th>ID</th><th>Tên</th><th>Danh mục</th><th>Giá</th><th>Tồn kho</th><th>Trạng thái</th><th>Hành động</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="p : ${products.content}">
+      <td th:text="${p.id}"></td>
+      <td th:text="${p.name}"></td>
+      <td th:text="${p.category?.name}"></td>
+      <td th:text="${p.price}"></td>
+      <td th:text="${p.stock}"></td>
+      <td th:text="${p.active} ? 'Hoạt động' : 'Ẩn'"></td>
+      <td>
+        <a th:href="@{/manager/products/{id}/edit(id=${p.id})}">Sửa</a>
+        <form th:action="@{/manager/products/{id}/toggle-status(id=${p.id})}" method="post" style="display:inline">
+          <input type="hidden" name="status" th:value="${!p.active}">
+          <button type="submit" th:text="${p.active} ? 'Ẩn' : 'Hiện'"></button>
+        </form>
+        <form th:action="@{/manager/products/{id}/delete(id=${p.id})}" method="post" style="display:inline"
+              onsubmit="return confirm('Xóa sản phẩm này?')">
+          <button type="submit">Xóa</button>
+        </form>
+      </td>
+    </tr>
+    <tr th:if="${products.empty}">
+      <td colspan="7">Chưa có sản phẩm.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div th:if="${products.totalPages > 1}">
+  <span th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}">
+    <a th:href="@{/manager/products(page=${i})}" th:text="${i + 1}"
+       th:style="${i == products.number} ? 'font-weight:bold' : ''"></a>
+  </span>
+</div>
+</body>
+</html>

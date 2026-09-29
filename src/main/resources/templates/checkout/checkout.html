@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header('Thanh toán đơn hàng')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/messages :: messages}"></div>
+
+<div class="container my-4">
+    <h3 class="border-bottom pb-2 mb-4">💳 Thanh toán & Đặt hàng</h3>
+
+    <form th:action="@{/checkout/place-order}" method="post">
+        <div class="row">
+            <!-- Thông tin giao hàng -->
+            <div class="col-lg-7">
+                <div class="card shadow-sm border mb-4">
+                    <div class="card-header bg-white fw-bold py-3">1. Thông tin người nhận</div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <label for="recipientName" class="form-label">Họ và tên người nhận <span class="text-danger">*</span></label>
+                            <input type="text" id="recipientName" name="recipientName" class="form-control" required th:value="${user != null ? user.name : ''}" placeholder="Nguyễn Văn A">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="recipientPhone" class="form-label">Số điện thoại liên hệ <span class="text-danger">*</span></label>
+                            <input type="tel" id="recipientPhone" name="recipientPhone" class="form-control" required th:value="${user != null ? user.phone : ''}" placeholder="0901234567">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="shippingAddress" class="form-label">Địa chỉ giao hàng chi tiết <span class="text-danger">*</span></label>
+                            <textarea id="shippingAddress" name="shippingAddress" class="form-control" rows="3" required placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố" th:text="${user != null ? user.address : ''}"></textarea>
+                            <div class="form-text">Địa chỉ này sẽ được lưu cố định cho đơn hàng hiện tại.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phương thức thanh toán -->
+                <div class="card shadow-sm border mb-4">
+                    <div class="card-header bg-white fw-bold py-3">2. Phương thức thanh toán</div>
+                    <div class="card-body p-4">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="COD" checked>
+                            <label class="form-check-label fw-bold" for="cod">
+                                💵 Thanh toán khi nhận hàng (COD)
+                            </label>
+                            <div class="text-muted small ms-4">Thanh toán bằng tiền mặt trực tiếp cho nhân viên giao hàng khi nhận sản phẩm.</div>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="vnpay" value="VNPAY">
+                            <label class="form-check-label fw-bold" for="vnpay">
+                                🏧 Thanh toán trực tuyến qua VNPAY
+                            </label>
+                            <div class="text-muted small ms-4">Thanh toán an toàn qua cổng VNPAY (Thẻ ATM, Internet Banking, QR Code).</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tóm tắt đơn hàng & Mã giảm giá -->
+            <div class="col-lg-5">
+                <div class="card shadow-sm border mb-4">
+                    <div class="card-header bg-white fw-bold py-3">Sản phẩm trong đơn (<span th:text="${#lists.size(cart.items)}">0</span>)</div>
+                    <div class="card-body p-3">
+                        <div class="list-group list-group-flush mb-3">
+                            <div th:each="item : ${cart.items}" class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                <div class="me-2">
+                                    <h6 class="mb-0 text-truncate" style="max-width: 220px;" th:text="${item.product.name}">Tên SP</h6>
+                                    <small class="text-muted" th:text="${#numbers.formatDecimal(item.product.price, 0, 'COMMA', 0, 'POINT') + ' ₫ x ' + item.quantity}"></small>
+                                </div>
+                                <span class="fw-bold text-dark" th:text="${#numbers.formatDecimal(item.product.price * item.quantity, 0, 'COMMA', 0, 'POINT') + ' ₫'}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Mã giảm giá -->
+                        <div class="input-group mb-3">
+                            <input type="text" name="discountCode" class="form-control text-uppercase" placeholder="Mã giảm giá (nếu có)">
+                        </div>
+
+                        <hr>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tạm tính:</span>
+                            <span class="fw-bold" th:text="${#numbers.formatDecimal(#aggregates.sum(cart.items.![product.price * quantity]), 0, 'COMMA', 0, 'POINT') + ' ₫'}">0 ₫</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 text-muted small">
+                            <span>Phí vận chuyển:</span>
+                            <span>Miễn phí</span>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 py-3 fw-bold fs-5">XÁC NHẬN ĐẶT HÀNG</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

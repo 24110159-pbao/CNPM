@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header('Đơn hàng của tôi')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/messages :: messages}"></div>
+
+<div class="container my-4">
+    <h3 class="border-bottom pb-2 mb-4">📦 Quản lý đơn mua của tôi</h3>
+
+    <!-- Tabs lọc theo trạng thái -->
+    <ul class="nav nav-pills mb-4 flex-nowrap overflow-auto pb-2">
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${selectedStatus == null} ? 'active'" th:href="@{/orders}">Tất cả</a>
+        </li>
+        <li class="nav-item" th:each="st : ${statuses}">
+            <a class="nav-link" th:classappend="${selectedStatus == st} ? 'active'" th:href="@{/orders(status=${st})}" th:text="${st}">Trạng thái</a>
+        </li>
+    </ul>
+
+    <!-- Danh sách đơn hàng -->
+    <div th:if="${orders != null and orders.totalElements > 0}">
+        <div class="card shadow-sm border mb-3" th:each="ord : ${orders.content}">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>Đơn hàng #<span th:text="${ord.id}">1</span></strong>
+                    <span class="text-muted ms-3 small" th:text="${#temporals.format(ord.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+                <span class="badge" th:classappend="${ord.status.name() == 'DELIVERED' ? 'bg-success' : (ord.status.name() == 'CANCELLED' ? 'bg-danger' : (ord.status.name() == 'PENDING' ? 'bg-warning text-dark' : 'bg-primary'))}" th:text="${ord.status}">STATUS</span>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <p class="mb-1"><strong>Người nhận: </strong><span th:text="${ord.recipientName} + ' - ' + ${ord.recipientPhone}"></span></p>
+                        <p class="mb-0 text-muted small"><strong>Địa chỉ: </strong><span th:text="${ord.shippingAddress}"></span></p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="text-muted small">Tổng thanh toán:</div>
+                        <div class="fs-4 fw-bold text-danger mb-2" th:text="${#numbers.formatDecimal(ord.finalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫'}">0 ₫</div>
+                        <a th:href="@{/orders/{id}(id=${ord.id})}" class="btn btn-outline-primary btn-sm">Xem chi tiết đơn hàng &raquo;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phân trang -->
+        <nav th:if="${orders.totalPages > 1}" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${orders.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/orders(page=${orders.number - 1}, status=${selectedStatus})}">&laquo;</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}" th:classappend="${i == orders.number} ? 'active'">
+                    <a class="page-link" th:href="@{/orders(page=${i}, status=${selectedStatus})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${orders.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/orders(page=${orders.number + 1}, status=${selectedStatus})}">&raquo;</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Không có đơn -->
+    <div th:if="${orders == null or orders.totalElements == 0}" class="text-center py-5">
+        <p class="text-muted fs-5">Bạn chưa có đơn hàng nào trong mục này.</p>
+        <a th:href="@{/products}" class="btn btn-primary">Mua sắm ngay</a>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

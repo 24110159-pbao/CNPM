@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Chi tiết người dùng - Manager</title></head>
+<body>
+<h1>Chi tiết Người dùng: <span th:text="${user.email}"></span></h1>
+<a href="/manager/users">← Danh sách</a>
+<hr>
+<div th:if="${success}" style="color:green" th:text="${success}"></div>
+<div th:if="${error}" style="color:red" th:text="${error}"></div>
+
+<h2>Thông tin</h2>
+<table border="1" cellpadding="8">
+  <tr><td>ID</td><td th:text="${user.id}"></td></tr>
+  <tr><td>Email</td><td th:text="${user.email}"></td></tr>
+  <tr><td>Họ tên</td><td th:text="${user.fullName}"></td></tr>
+  <tr><td>SĐT</td><td th:text="${user.phone}"></td></tr>
+  <tr><td>Địa chỉ</td><td th:text="${user.address}"></td></tr>
+  <tr><td>Vai trò</td><td th:text="${user.role}"></td></tr>
+  <tr><td>Trạng thái</td><td th:text="${user.enabled} ? 'Hoạt động' : 'Bị khóa'"></td></tr>
+  <tr><td>Ngày đăng ký</td><td th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}"></td></tr>
+</table>
+
+<h2>Đổi vai trò</h2>
+<form th:action="@{/manager/users/{id}/role(id=${user.id})}" method="post">
+  <select name="role">
+    <option value="USER" th:selected="${user.role.name() == 'USER'}">USER</option>
+    <option value="MANAGER" th:selected="${user.role.name() == 'MANAGER'}">MANAGER</option>
+  </select>
+  <button type="submit">Cập nhật</button>
+</form>
+
+<h2>Lịch sử đơn hàng</h2>
+<table border="1" cellpadding="8">
+  <thead>
+    <tr><th>ID</th><th>Tổng tiền</th><th>Trạng thái</th><th>Ngày đặt</th><th>Chi tiết</th></tr>
+  </thead>
+  <tbody>
+    <tr th:each="o : ${orders.content}">
+      <td th:text="${o.id}"></td>
+      <td th:text="${o.finalAmount}"></td>
+      <td th:text="${o.status}"></td>
+      <td th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+      <td><a th:href="@{/manager/orders/{id}(id=${o.id})}">Xem</a></td>
+    </tr>
+    <tr th:if="${orders.empty}">
+      <td colspan="5">Chưa có đơn hàng.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div th:if="${orders.totalPages > 1}">
+  <span th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}">
+    <a th:href="@{/manager/users/{uid}(uid=${user.id}, page=${i})}" th:text="${i + 1}"
+       th:style="${i == orders.number} ? 'font-weight:bold' : ''"></a>
+  </span>
+</div>
+</body>
+</html>

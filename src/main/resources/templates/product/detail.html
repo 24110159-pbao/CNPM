@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header(${product != null ? product.name : 'Chi tiết sản phẩm'})}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/messages :: messages}"></div>
+
+<div class="container my-4" th:if="${product != null}">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/products}">Sản phẩm</a></li>
+            <li class="breadcrumb-item active" th:text="${product.name}">Tên</li>
+        </ol>
+    </nav>
+
+    <div class="row bg-white p-4 rounded-3 shadow-sm border mb-5">
+        <div class="col-md-5 text-center mb-4 mb-md-0">
+            <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}" th:src="${product.imageUrl}" class="img-fluid rounded border" style="max-height: 350px; width: 100%; object-fit: contain;" alt="Product">
+            <div th:unless="${product.imageUrl != null and !product.imageUrl.isEmpty()}" class="bg-light p-5 border rounded text-muted">Chưa có ảnh</div>
+        </div>
+
+        <div class="col-md-7">
+            <h2 class="fw-bold" th:text="${product.name}">Tên sản phẩm</h2>
+            <p class="text-muted mb-2">Danh mục: <span class="badge bg-secondary" th:text="${product.category != null ? product.category.name : 'Chung'}">Category</span></p>
+            <h3 class="text-danger fw-bold my-3" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}">0 ₫</h3>
+
+            <p class="mb-2"><strong>Trạng thái: </strong>
+                <span th:if="${product.stock > 0 and product.status}" class="badge bg-success">Còn hàng</span>
+                <span th:unless="${product.stock > 0 and product.status}" class="badge bg-danger">Hết hàng / Ngừng bán</span>
+            </p>
+            <p class="mb-4"><strong>Số lượng tồn kho: </strong><span th:text="${product.stock}">0</span> sản phẩm</p>
+
+            <form th:if="${product.stock > 0 and product.status}" th:action="@{/cart/add}" method="post" class="row g-3 align-items-center mb-4">
+                <input type="hidden" name="productId" th:value="${product.id}">
+                <div class="col-auto">
+                    <label for="quantity" class="col-form-label fw-bold">Số lượng:</label>
+                </div>
+                <div class="col-auto">
+                    <input type="number" id="quantity" name="quantity" class="form-control" value="1" min="1" th:max="${product.stock}" style="width: 100px;">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary px-4">🛒 Thêm vào giỏ hàng</button>
+                </div>
+            </form>
+
+            <div class="border-top pt-3">
+                <h5 class="fw-bold">Mô tả sản phẩm:</h5>
+                <p class="text-muted" th:text="${product.description}">Mô tả chi tiết sản phẩm.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Đánh giá sản phẩm -->
+    <div class="bg-white p-4 rounded-3 shadow-sm border">
+        <h4 class="fw-bold border-bottom pb-3 mb-4">⭐ Đánh giá từ khách hàng (<span th:text="${reviews.totalElements}">0</span>)</h4>
+
+        <div th:if="${reviews.totalElements == 0}" class="text-muted py-3">
+            Sản phẩm chưa có đánh giá nào từ người mua.
+        </div>
+
+        <div th:each="rev : ${reviews.content}" class="border-bottom py-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong th:text="${rev.user.name}">Tên khách</strong>
+                <span class="text-muted small" th:text="${#temporals.format(rev.createdAt, 'dd/MM/yyyy HH:mm')}">Thời gian</span>
+            </div>
+            <div class="text-warning mb-2">
+                <span th:each="star : ${#numbers.sequence(1, rev.rating)}">★</span>
+                <span th:if="${rev.rating < 5}" th:each="star : ${#numbers.sequence(rev.rating + 1, 5)}">☆</span>
+                <span class="text-dark small ms-1" th:text="'(' + ${rev.rating} + '/5 sao)'"></span>
+            </div>
+            <p class="mb-0 text-secondary" th:text="${rev.comment}">Nội dung đánh giá</p>
+        </div>
+
+        <!-- Phân trang đánh giá -->
+        <nav th:if="${reviews.totalPages > 1}" class="mt-3">
+            <ul class="pagination pagination-sm justify-content-center">
+                <li class="page-item" th:classappend="${reviews.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/products/{id}(id=${product.id}, page=${reviews.number - 1})}">&laquo;</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, reviews.totalPages - 1)}" th:classappend="${i == reviews.number} ? 'active'">
+                    <a class="page-link" th:href="@{/products/{id}(id=${product.id}, page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${reviews.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/products/{id}(id=${product.id}, page=${reviews.number + 1})}">&raquo;</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<div class="container my-4 text-center" th:unless="${product != null}">
+    <div class="alert alert-warning">Không tìm thấy sản phẩm.</div>
+    <a th:href="@{/products}" class="btn btn-primary">Quay lại danh sách sản phẩm</a>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

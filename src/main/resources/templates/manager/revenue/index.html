@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Doanh thu - Manager</title></head>
+<body>
+<h1>Báo cáo Doanh thu</h1>
+<a href="/manager/dashboard">Dashboard</a>
+<hr>
+
+<form method="get" action="/manager/revenue">
+  <label>Từ ngày:</label>
+  <input type="date" name="startDate" th:value="${startDate}">
+  <label>Đến ngày:</label>
+  <input type="date" name="endDate" th:value="${endDate}">
+  <button type="submit">Xem</button>
+</form>
+<br>
+<table border="1" cellpadding="8">
+  <tr>
+    <td>Doanh thu trong khoảng</td>
+    <td th:text="${revenue != null} ? ${#numbers.formatDecimal(revenue, 0, 'COMMA', 0, 'POINT')} + ' đ' : '0 đ'"></td>
+  </tr>
+  <tr>
+    <td>Tổng doanh thu tất cả thời gian</td>
+    <td th:text="${totalRevenue != null} ? ${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' đ' : '0 đ'"></td>
+  </tr>
+  <tr>
+    <td>Tổng đơn trong khoảng</td>
+    <td th:text="${totalOrdersInRange}"></td>
+  </tr>
+  <tr>
+    <td>Đơn đã giao trong khoảng</td>
+    <td th:text="${deliveredOrdersInRange}"></td>
+  </tr>
+  <tr>
+    <td>Đơn bị hủy trong khoảng</td>
+    <td th:text="${cancelledOrdersInRange}"></td>
+  </tr>
+</table>
+</body>
+</html>

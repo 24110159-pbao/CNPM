@@ -5,18 +5,9 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(
-        name = "products",
-        indexes = {
-                @Index(name = "idx_products_name", columnList = "name"),
-                @Index(name = "idx_products_category", columnList = "category_id"),
-                @Index(name = "idx_products_created_at", columnList = "created_at")
-        }
-)
+@Table(name = "products")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -32,7 +23,7 @@ public class Product {
     @JoinColumn(
             name = "category_id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_product_category")
+            foreignKey = @ForeignKey(name = "fk_products_category")
     )
     private Category category;
 
@@ -42,42 +33,28 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal price;
 
     @Column(nullable = false)
-    @Builder.Default
-    private Integer stock = 0;
+    private Integer stock;
 
-    @Column(name = "image_url", length = 500)
+    @Column(length = 500)
     private String imageUrl;
 
     @Column(nullable = false)
     @Builder.Default
     private Boolean status = true;
 
-    @Column(name = "created_at", nullable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    @OneToMany(
-            mappedBy = "product",
-            fetch = FetchType.LAZY
-    )
-    @Builder.Default
-    private List<CartItem> cartItems = new ArrayList<>();
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
 
-    @OneToMany(
-            mappedBy = "product",
-            fetch = FetchType.LAZY
-    )
-    @Builder.Default
-    private List<OrderItem> orderItems = new ArrayList<>();
-
-    @OneToMany(
-            mappedBy = "product",
-            fetch = FetchType.LAZY
-    )
-    @Builder.Default
-    private List<Review> reviews = new ArrayList<>();
+        if (status == null) {
+            status = true;
+        }
+    }
 }

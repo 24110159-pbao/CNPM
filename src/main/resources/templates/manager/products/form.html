@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Sản phẩm - Manager</title></head>
+<body>
+<h1 th:text="${product != null} ? 'Sửa sản phẩm' : 'Thêm sản phẩm'">Form sản phẩm</h1>
+<a href="/manager/products">← Quay lại</a>
+<hr>
+<div th:if="${error}" style="color:red" th:text="${error}"></div>
+
+<form th:action="${product != null} ? @{/manager/products/{id}/edit(id=${product.id})} : @{/manager/products/create}"
+      method="post" enctype="multipart/form-data">
+
+  <div>
+    <label>Danh mục:</label><br>
+    <select name="categoryId" required>
+      <option value="">-- Chọn danh mục --</option>
+      <option th:each="c : ${categories}"
+              th:value="${c.id}"
+              th:text="${c.name}"
+              th:selected="${product != null and product.category?.id == c.id}"></option>
+    </select>
+  </div>
+  <div>
+    <label>Tên sản phẩm:</label><br>
+    <input type="text" name="name" required th:value="${product?.name}">
+  </div>
+  <div>
+    <label>Mô tả:</label><br>
+    <textarea name="description" rows="4" cols="50" th:text="${product?.description}"></textarea>
+  </div>
+  <div>
+    <label>Giá:</label><br>
+    <input type="number" name="price" step="0.01" min="0" required th:value="${product?.price}">
+  </div>
+  <div>
+    <label>Tồn kho:</label><br>
+    <input type="number" name="stock" min="0" required th:value="${product?.stock}">
+  </div>
+  <div>
+    <label>Ảnh sản phẩm (để trống nếu không thay đổi):</label><br>
+    <img th:if="${product?.imageUrl}" th:src="${product.imageUrl}" width="100"><br>
+    <input type="file" name="image" accept="image/*">
+  </div>
+  <br>
+  <button type="submit" th:text="${product != null} ? 'Cập nhật' : 'Thêm mới'">Lưu</button>
+</form>
+</body>
+</html>

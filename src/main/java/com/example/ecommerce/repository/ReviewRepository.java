@@ -7,8 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface ReviewRepository
-        extends JpaRepository<Review, Long> {
+public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     Page<Review> findByProductIdOrderByCreatedAtDesc(
             Long productId,
@@ -17,6 +16,10 @@ public interface ReviewRepository
 
     Page<Review> findByUserIdOrderByCreatedAtDesc(
             Long userId,
+            Pageable pageable
+    );
+
+    Page<Review> findAllByOrderByCreatedAtDesc(
             Pageable pageable
     );
 

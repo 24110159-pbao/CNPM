@@ -1,18 +1,13 @@
 package com.example.ecommerce.entity;
 
+import com.example.ecommerce.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(
-        name = "notifications",
-        indexes = {
-                @Index(name = "idx_notifications_user", columnList = "user_id"),
-                @Index(name = "idx_notifications_read", columnList = "is_read")
-        }
-)
+@Table(name = "notifications")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,24 +23,33 @@ public class Notification {
     @JoinColumn(
             name = "user_id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_notification_user")
+            foreignKey = @ForeignKey(name = "fk_notifications_user")
     )
     private User user;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false, length = 200)
     private String title;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
 
-    @Column(nullable = false, length = 50)
-    private String type;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private NotificationType type;
 
-    @Column(name = "is_read", nullable = false)
+    @Column(nullable = false)
     @Builder.Default
     private Boolean isRead = false;
 
-    @Column(name = "created_at", nullable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+
+        if (isRead == null) {
+            isRead = false;
+        }
+    }
 }

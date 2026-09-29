@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header('Hồ sơ tài khoản')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/messages :: messages}"></div>
+
+<div class="container my-4" th:if="${user != null}">
+    <h3 class="border-bottom pb-2 mb-4">👤 Thông tin tài khoản</h3>
+
+    <div class="row">
+        <!-- Cập nhật thông tin cá nhân & Địa chỉ -->
+        <div class="col-md-7 mb-4">
+            <div class="card shadow-sm border">
+                <div class="card-header bg-white fw-bold py-3">Thông tin cá nhân & Địa chỉ nhận hàng</div>
+                <div class="card-body p-4">
+                    <form th:action="@{/profile/update}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Email (không thể đổi):</label>
+                            <input type="email" class="form-control bg-light" th:value="${user.email}" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label fw-bold">Họ và tên:</label>
+                            <input type="text" id="name" name="name" class="form-control" th:value="${user.name}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label fw-bold">Số điện thoại:</label>
+                            <input type="tel" id="phone" name="phone" class="form-control" th:value="${user.phone}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="form-label fw-bold">Địa chỉ giao hàng mặc định:</label>
+                            <textarea id="address" name="address" class="form-control" rows="3" th:text="${user.address}" placeholder="Nhập địa chỉ nhận hàng của bạn"></textarea>
+                            <div class="form-text">Địa chỉ này sẽ tự động điền sẵn khi bạn thanh toán đơn hàng.</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary px-4">Lưu thay đổi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Đổi mật khẩu -->
+        <div class="col-md-5">
+            <div class="card shadow-sm border mb-4">
+                <div class="card-header bg-white fw-bold py-3">Đổi mật khẩu</div>
+                <div class="card-body p-4">
+                    <form th:action="@{/profile/change-password}" method="post">
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label fw-bold">Mật khẩu mới:</label>
+                            <input type="password" id="newPassword" name="newPassword" class="form-control" required placeholder="Nhập mật khẩu mới">
+                        </div>
+
+                        <button type="submit" class="btn btn-warning px-4">Cập nhật mật khẩu</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Thao tác nhanh -->
+            <div class="list-group shadow-sm border">
+                <a th:href="@{/orders}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                    <span>📦 Xem đơn mua của tôi</span>
+                    <span>&raquo;</span>
+                </a>
+                <a th:href="@{/notifications}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                    <span>🔔 Thông báo của tôi</span>
+                    <span>&raquo;</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

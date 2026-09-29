@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Người dùng - Manager</title></head>
+<body>
+<h1>Quản lý Người dùng</h1>
+<a href="/manager/dashboard">Dashboard</a>
+<hr>
+<div th:if="${success}" style="color:green" th:text="${success}"></div>
+
+<form method="get" action="/manager/users">
+  <input type="text" name="keyword" placeholder="Tìm theo email/tên..." th:value="${keyword}">
+  <button type="submit">Tìm</button>
+  <a th:if="${keyword}" href="/manager/users">Xóa lọc</a>
+</form>
+<br>
+<table border="1" cellpadding="8">
+  <thead>
+    <tr>
+      <th>ID</th><th>Email</th><th>Họ tên</th><th>Vai trò</th><th>Trạng thái</th><th>Ngày đăng ký</th><th>Chi tiết</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="u : ${users.content}">
+      <td th:text="${u.id}"></td>
+      <td th:text="${u.email}"></td>
+      <td th:text="${u.fullName}"></td>
+      <td th:text="${u.role}"></td>
+      <td th:text="${u.enabled} ? 'Hoạt động' : 'Bị khóa'"></td>
+      <td th:text="${#temporals.format(u.createdAt, 'dd/MM/yyyy')}"></td>
+      <td><a th:href="@{/manager/users/{id}(id=${u.id})}">Xem</a></td>
+    </tr>
+    <tr th:if="${users.empty}">
+      <td colspan="7">Không tìm thấy người dùng.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div th:if="${users.totalPages > 1}">
+  <span th:each="i : ${#numbers.sequence(0, users.totalPages - 1)}">
+    <a th:href="@{/manager/users(page=${i}, keyword=${keyword})}" th:text="${i + 1}"
+       th:style="${i == users.number} ? 'font-weight:bold' : ''"></a>
+  </span>
+</div>
+</body>
+</html>

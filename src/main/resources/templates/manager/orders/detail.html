@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Chi tiết đơn hàng - Manager</title></head>
+<body>
+<h1>Chi tiết Đơn hàng #<span th:text="${order.id}"></span></h1>
+<a href="/manager/orders">← Danh sách đơn hàng</a>
+<hr>
+<div th:if="${success}" style="color:green" th:text="${success}"></div>
+<div th:if="${error}" style="color:red" th:text="${error}"></div>
+
+<h2>Thông tin đơn</h2>
+<table border="1" cellpadding="8">
+  <tr><td>Khách hàng</td><td th:text="${order.user?.email}"></td></tr>
+  <tr><td>Địa chỉ giao hàng</td><td th:text="${order.shippingAddress}"></td></tr>
+  <tr><td>SĐT</td><td th:text="${order.shippingPhone}"></td></tr>
+  <tr><td>Tên người nhận</td><td th:text="${order.shippingName}"></td></tr>
+  <tr><td>Mã giảm giá</td><td th:text="${order.discountCode}"></td></tr>
+  <tr><td>Giảm giá</td><td th:text="${order.discountAmount}"></td></tr>
+  <tr><td>Tổng tiền</td><td th:text="${order.finalAmount}"></td></tr>
+  <tr><td>Trạng thái</td><td th:text="${order.status}"></td></tr>
+  <tr><td>Ngày đặt</td><td th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"></td></tr>
+</table>
+
+<h2>Thanh toán</h2>
+<table border="1" cellpadding="8" th:if="${payment != null}">
+  <tr><td>Phương thức</td><td th:text="${payment.method}"></td></tr>
+  <tr><td>Trạng thái thanh toán</td><td th:text="${payment.status}"></td></tr>
+  <tr><td>Ngày thanh toán</td>
+    <td th:text="${payment.paidAt != null} ? ${#temporals.format(payment.paidAt, 'dd/MM/yyyy HH:mm')} : '-'"></td>
+  </tr>
+</table>
+<p th:if="${payment == null}">Chưa có thông tin thanh toán.</p>
+
+<h2>Sản phẩm</h2>
+<table border="1" cellpadding="8">
+  <thead>
+    <tr><th>Sản phẩm</th><th>Giá tại thời điểm</th><th>Số lượng</th><th>Thành tiền</th></tr>
+  </thead>
+  <tbody>
+    <tr th:each="item : ${order.orderItems}">
+      <td th:text="${item.productName}"></td>
+      <td th:text="${item.unitPrice}"></td>
+      <td th:text="${item.quantity}"></td>
+      <td th:text="${item.unitPrice * item.quantity}"></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Cập nhật trạng thái</h2>
+<form th:action="@{/manager/orders/{id}/status(id=${order.id})}" method="post">
+  <select name="newStatus">
+    <option value="PENDING" th:selected="${order.status.name() == 'PENDING'}">PENDING</option>
+    <option value="CONFIRMED" th:selected="${order.status.name() == 'CONFIRMED'}">CONFIRMED</option>
+    <option value="SHIPPING" th:selected="${order.status.name() == 'SHIPPING'}">SHIPPING</option>
+    <option value="DELIVERED" th:selected="${order.status.name() == 'DELIVERED'}">DELIVERED</option>
+    <option value="CANCELLED" th:selected="${order.status.name() == 'CANCELLED'}">CANCELLED</option>
+    <option value="RETURN_REQUESTED" th:selected="${order.status.name() == 'RETURN_REQUESTED'}">RETURN_REQUESTED</option>
+    <option value="REFUNDED" th:selected="${order.status.name() == 'REFUNDED'}">REFUNDED</option>
+  </select>
+  <button type="submit">Cập nhật</button>
+</form>
+</body>
+</html>

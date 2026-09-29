@@ -18,7 +18,7 @@ public interface NotificationRepository
             Pageable pageable
     );
 
-    long countByUserIdAndIsReadFalse(
-            Long userId
-    );
+    long countByUserIdAndIsReadFalse(Long userId);
+
+    void deleteByUserId(Long userId);
 }

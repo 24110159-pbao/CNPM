@@ -22,7 +22,7 @@ public class OrderItem {
     @JoinColumn(
             name = "order_id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_order_item_order")
+            foreignKey = @ForeignKey(name = "fk_order_items_order")
     )
     private Order order;
 
@@ -30,22 +30,17 @@ public class OrderItem {
     @JoinColumn(
             name = "product_id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_order_item_product")
+            foreignKey = @ForeignKey(name = "fk_order_items_product")
     )
     private Product product;
-
-    /*
-     * Giá tại thời điểm đặt hàng
-     */
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal price;
 
     @Column(nullable = false)
     private Integer quantity;
 
-    /*
-     * price * quantity
+    /**
+     * Giá sản phẩm tại thời điểm đặt hàng.
+     * Không lấy lại giá từ Product khi xem lịch sử Order.
      */
-    @Column(name = "subtotal", nullable = false, precision = 15, scale = 2)
-    private BigDecimal subtotal;
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal price;
 }

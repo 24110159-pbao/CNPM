@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header('Danh mục sản phẩm')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/messages :: messages}"></div>
+
+<div class="container my-4">
+    <h3 class="border-bottom pb-2 mb-4">📁 Tất cả danh mục sản phẩm</h3>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col" th:each="cat : ${categories}">
+            <div class="card h-100 shadow-sm border-0 bg-light p-3 text-center">
+                <div class="card-body">
+                    <h4 class="card-title fw-bold" th:text="${cat.name}">Category</h4>
+                    <p class="text-muted small">Khám phá các sản phẩm thuộc nhóm này</p>
+                    <a th:href="@{/categories/{id}(id=${cat.id})}" class="btn btn-outline-primary">Xem các mặt hàng &raquo;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:if="${#lists.isEmpty(categories)}" class="alert alert-info text-center mt-3">
+        Chưa có danh mục nào.
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

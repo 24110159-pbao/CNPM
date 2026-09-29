@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Dashboard - Manager</title></head>
+<body>
+<h1>Dashboard</h1>
+<nav>
+  <a href="/manager/products">Sản phẩm</a> |
+  <a href="/manager/categories">Danh mục</a> |
+  <a href="/manager/orders">Đơn hàng</a> |
+  <a href="/manager/discounts">Mã giảm giá</a> |
+  <a href="/manager/reviews">Đánh giá</a> |
+  <a href="/manager/users">Người dùng</a> |
+  <a href="/manager/revenue">Doanh thu</a>
+</nav>
+<hr>
+<h2>Tổng quan</h2>
+<table border="1" cellpadding="8">
+  <tr>
+    <td>Tổng người dùng</td>
+    <td th:text="${totalUsers}">0</td>
+  </tr>
+  <tr>
+    <td>Tổng sản phẩm</td>
+    <td th:text="${totalProducts}">0</td>
+  </tr>
+  <tr>
+    <td>Tổng đơn hàng</td>
+    <td th:text="${totalOrders}">0</td>
+  </tr>
+  <tr>
+    <td>Doanh thu (DELIVERED)</td>
+    <td th:text="${revenue}">0</td>
+  </tr>
+</table>
+
+<h2>Đơn hàng theo trạng thái</h2>
+<table border="1" cellpadding="8">
+  <tr>
+    <th>Trạng thái</th><th>Số lượng</th>
+  </tr>
+  <tr>
+    <td>PENDING</td><td th:text="${orderCount_PENDING}">0</td>
+  </tr>
+  <tr>
+    <td>CONFIRMED</td><td th:text="${orderCount_CONFIRMED}">0</td>
+  </tr>
+  <tr>
+    <td>SHIPPING</td><td th:text="${orderCount_SHIPPING}">0</td>
+  </tr>
+  <tr>
+    <td>DELIVERED</td><td th:text="${orderCount_DELIVERED}">0</td>
+  </tr>
+  <tr>
+    <td>CANCELLED</td><td th:text="${orderCount_CANCELLED}">0</td>
+  </tr>
+  <tr>
+    <td>RETURN_REQUESTED</td><td th:text="${orderCount_RETURN_REQUESTED}">0</td>
+  </tr>
+  <tr>
+    <td>REFUNDED</td><td th:text="${orderCount_REFUNDED}">0</td>
+  </tr>
+</table>
+</body>
+</html>

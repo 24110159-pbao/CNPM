@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header('Kết quả thanh toán')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container my-5 text-center">
+    <div class="py-5">
+        <div th:if="${status == 'invalid'}" class="alert alert-danger py-4">
+            <h2 class="fw-bold">❌ Giao dịch không hợp lệ hoặc thanh toán thất bại!</h2>
+            <p class="text-muted">Chữ ký thanh toán không hợp lệ hoặc quý khách đã hủy thanh toán tại cổng VNPAY.</p>
+        </div>
+        <div th:unless="${status == 'invalid'}" class="alert alert-info py-4">
+            <h2 class="fw-bold">Thông tin thanh toán</h2>
+            <p class="text-muted" th:text="'Trạng thái phản hồi: ' + ${status}"></p>
+        </div>
+        <div class="mt-4">
+            <a th:href="@{/orders}" class="btn btn-primary px-4">Xem danh sách đơn hàng</a>
+            <a th:href="@{/}" class="btn btn-outline-secondary px-4 ms-2">Về trang chủ</a>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

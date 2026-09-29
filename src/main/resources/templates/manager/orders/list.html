@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Đơn hàng - Manager</title></head>
+<body>
+<h1>Quản lý Đơn hàng</h1>
+<a href="/manager/dashboard">Dashboard</a>
+<hr>
+<div th:if="${success}" style="color:green" th:text="${success}"></div>
+
+<form method="get" action="/manager/orders">
+  <label>Lọc trạng thái:</label>
+  <select name="status" onchange="this.form.submit()">
+    <option value="">-- Tất cả --</option>
+    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+            th:selected="${s == selectedStatus}"></option>
+  </select>
+  <span th:if="${selectedStatus}">
+    <a href="/manager/orders">Bỏ lọc</a>
+  </span>
+</form>
+
+<table border="1" cellpadding="8">
+  <thead>
+    <tr>
+      <th>ID</th><th>Khách hàng</th><th>Tổng tiền</th><th>Thanh toán</th><th>Trạng thái</th><th>Ngày đặt</th><th>Chi tiết</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="o : ${orders.content}">
+      <td th:text="${o.id}"></td>
+      <td th:text="${o.user?.email}"></td>
+      <td th:text="${o.finalAmount}"></td>
+      <td th:text="${o.payment?.method}"></td>
+      <td th:text="${o.status}"></td>
+      <td th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+      <td><a th:href="@{/manager/orders/{id}(id=${o.id})}">Xem</a></td>
+    </tr>
+    <tr th:if="${orders.empty}">
+      <td colspan="7">Không có đơn hàng.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div th:if="${orders.totalPages > 1}">
+  <span th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}">
+    <a th:href="@{/manager/orders(page=${i}, status=${selectedStatus})}" th:text="${i + 1}"
+       th:style="${i == orders.number} ? 'font-weight:bold' : ''"></a>
+  </span>
+</div>
+</body>
+</html>

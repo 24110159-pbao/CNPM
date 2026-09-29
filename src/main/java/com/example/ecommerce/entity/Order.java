@@ -10,14 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(
-        name = "orders",
-        indexes = {
-                @Index(name = "idx_orders_user", columnList = "user_id"),
-                @Index(name = "idx_orders_status", columnList = "status"),
-                @Index(name = "idx_orders_created_at", columnList = "created_at")
-        }
-)
+@Table(name = "orders")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,92 +22,93 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /*
-     * User đặt hàng
-     */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "user_id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_order_user")
+            foreignKey = @ForeignKey(name = "fk_orders_user")
     )
     private User user;
 
-    /*
-     * Snapshot thông tin người nhận
-     */
-    @Column(name = "recipient_name", nullable = false, length = 100)
+    @Column(nullable = false, length = 100)
     private String recipientName;
 
-    @Column(name = "recipient_phone", nullable = false, length = 20)
+    @Column(nullable = false, length = 20)
     private String recipientPhone;
 
-    @Column(name = "shipping_address", nullable = false, length = 500)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String shippingAddress;
 
-    /*
-     * Tổng tiền hàng trước giảm giá
-     */
-    @Column(name = "subtotal", nullable = false, precision = 15, scale = 2)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal subtotal;
 
-    /*
-     * Số tiền được giảm
-     */
-    @Column(name = "discount_amount", nullable = false, precision = 15, scale = 2)
+    @Column(nullable = false, precision = 19, scale = 2)
     @Builder.Default
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
-    /*
-     * Tổng tiền cuối cùng
-     */
-    @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
-    private BigDecimal totalAmount;
+    @Column(length = 50)
+    private String discountCode;
 
-    /*
-     * Trạng thái Order
-     */
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal finalAmount;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     @Builder.Default
     private OrderStatus status = OrderStatus.PENDING;
 
-    /*
-     * Discount code đã sử dụng.
-     * Có thể null nếu không dùng mã.
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "discount_code_id",
-            foreignKey = @ForeignKey(name = "fk_order_discount")
-    )
-    private DiscountCode discountCode;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    @Column(name = "created_at", nullable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    /*
-     * Order 1 - N OrderItem
-     */
+    @OneToOne(
+            mappedBy = "order",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY
+    )
+    private Payment payment;
+
     @OneToMany(
             mappedBy = "order",
-            fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     @Builder.Default
     private List<OrderItem> items = new ArrayList<>();
 
-    /*
-     * Order 1 - 1 Payment
-     */
-    @OneToOne(
-            mappedBy = "order",
-            fetch = FetchType.LAZY
-    )
-    private Payment payment;
+    public List<OrderItem> getOrderItems() {
+        return items;
+    }
+
+    public void addItem(OrderItem item) {
+        items.add(item);
+        item.setOrder(this);
+    }
+
+    public void removeItem(OrderItem item) {
+        items.remove(item);
+        item.setOrder(null);
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+
+        if (status == null) {
+            status = OrderStatus.PENDING;
+        }
+
+        if (discountAmount == null) {
+            discountAmount = BigDecimal.ZERO;
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header('Trang chủ - E-Commerce')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/messages :: messages}"></div>
+
+<div class="container my-4">
+    <!-- Hero Banner -->
+    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
+        <div class="container-fluid py-3">
+            <h1 class="display-6 fw-bold text-primary">Website Mua Sắm Trực Tuyến</h1>
+            <p class="col-md-8 fs-5 text-muted">Hệ thống thương mại điện tử Spring Boot MVC & Thymeleaf. Đáp ứng đầy đủ quy trình từ giỏ hàng, đặt hàng, thanh toán COD/VNPay đến đánh giá sản phẩm.</p>
+            <a th:href="@{/products}" class="btn btn-primary btn-lg">Khám phá sản phẩm ngay</a>
+        </div>
+    </div>
+
+    <!-- Danh mục -->
+    <div class="mb-5">
+        <h3 class="border-bottom pb-2 mb-3">📁 Danh mục sản phẩm</h3>
+        <div class="row row-cols-2 row-cols-md-4 g-3">
+            <div class="col" th:each="category : ${categories}">
+                <div class="card h-100 text-center p-3 shadow-sm">
+                    <h5 class="card-title" th:text="${category.name}">Tên danh mục</h5>
+                    <a th:href="@{/categories/{id}(id=${category.id})}" class="btn btn-sm btn-outline-primary mt-2">Xem sản phẩm</a>
+                </div>
+            </div>
+        </div>
+        <p th:if="${#lists.isEmpty(categories)}" class="text-muted">Chưa có danh mục nào.</p>
+    </div>
+
+    <!-- Sản phẩm mới nhất -->
+    <div class="mb-5">
+        <h3 class="border-bottom pb-2 mb-3">✨ Sản phẩm mới nhất</h3>
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            <div class="col" th:each="product : ${newProducts}">
+                <div class="card h-100 shadow-sm">
+                    <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}" th:src="${product.imageUrl}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product image">
+                    <div th:unless="${product.imageUrl != null and !product.imageUrl.isEmpty()}" class="bg-secondary text-white text-center py-5">Chưa có ảnh</div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-truncate" th:text="${product.name}">Tên sản phẩm</h5>
+                        <p class="card-text text-danger fw-bold fs-5 mb-1" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}">0 ₫</p>
+                        <p class="card-text text-muted small mb-3" th:text="'Kho: ' + ${product.stock}"></p>
+                        <div class="mt-auto">
+                            <a th:href="@{/products/{id}(id=${product.id})}" class="btn btn-sm btn-primary w-100">Chi tiết & Đặt mua</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p th:if="${#lists.isEmpty(newProducts)}" class="text-muted">Chưa có sản phẩm mới nào.</p>
+    </div>
+
+    <!-- Sản phẩm giá tốt -->
+    <div class="mb-5">
+        <h3 class="border-bottom pb-2 mb-3">🔥 Sản phẩm giá tốt</h3>
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            <div class="col" th:each="product : ${cheapProducts}">
+                <div class="card h-100 shadow-sm border-warning">
+                    <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}" th:src="${product.imageUrl}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product image">
+                    <div th:unless="${product.imageUrl != null and !product.imageUrl.isEmpty()}" class="bg-secondary text-white text-center py-5">Chưa có ảnh</div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-truncate" th:text="${product.name}">Tên sản phẩm</h5>
+                        <p class="card-text text-danger fw-bold fs-5 mb-1" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}">0 ₫</p>
+                        <p class="card-text text-muted small mb-3" th:text="'Kho: ' + ${product.stock}"></p>
+                        <div class="mt-auto">
+                            <a th:href="@{/products/{id}(id=${product.id})}" class="btn btn-sm btn-outline-warning text-dark w-100">Chi tiết</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

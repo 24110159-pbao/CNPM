@@ -1,98 +1,59 @@
 <!DOCTYPE html>
-<html lang="vi"
-      xmlns:th="http://www.thymeleaf.org">
-
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<nav th:fragment="navbar"
-     class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
-
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
     <div class="container">
-
-        <!-- Logo -->
-        <a class="navbar-brand fw-bold text-primary"
-           th:href="@{/}">
-            E-Commerce
-        </a>
-
-        <!-- Mobile button -->
-        <button class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#mainNavbar"
-                aria-controls="mainNavbar"
-                aria-expanded="false"
-                aria-label="Toggle navigation">
-
+        <a class="navbar-brand fw-bold" th:href="@{/}">🛒 E-Commerce</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- Navbar content -->
-        <div class="collapse navbar-collapse"
-             id="mainNavbar">
-
-            <!-- Left -->
+        <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
                 <li class="nav-item">
-                    <a class="nav-link"
-                       th:href="@{/}">
-                        Trang chủ
-                    </a>
+                    <a class="nav-link" th:href="@{/}">Trang chủ</a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link"
-                       th:href="@{/products}">
-                        Sản phẩm
-                    </a>
+                    <a class="nav-link" th:href="@{/products}">Sản phẩm</a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link"
-                       th:href="@{/categories}">
-                        Danh mục
-                    </a>
+                    <a class="nav-link" th:href="@{/cart}">Giỏ hàng</a>
                 </li>
-
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/orders}">Đơn mua</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/notifications}">Thông báo</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-warning" th:href="@{/manager/dashboard}">Quản trị</a>
+                </li>
             </ul>
 
-            <!-- Search -->
-            <form class="d-flex me-3"
-                  th:action="@{/products}"
-                  method="get">
-
-                <input class="form-control me-2"
-                       type="search"
-                       name="keyword"
-                       placeholder="Tìm sản phẩm..."
-                       aria-label="Search">
-
-                <button class="btn btn-outline-primary"
-                        type="submit">
-                    Tìm
-                </button>
-
+            <form class="d-flex me-3" th:action="@{/products/search}" method="get">
+                <input class="form-control me-2 form-control-sm" type="search" name="keyword" th:value="${keyword}" placeholder="Tìm sản phẩm...">
+                <button class="btn btn-outline-light btn-sm" type="submit">Tìm</button>
             </form>
 
-            <!-- Authentication -->
-            <div class="d-flex gap-2">
-
-                <a class="btn btn-outline-primary"
-                   th:href="@{/login}">
-                    Đăng nhập
-                </a>
-
-                <a class="btn btn-primary"
-                   th:href="@{/register}">
-                    Đăng ký
-                </a>
-
-            </div>
-
+            <ul class="navbar-nav mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/profile}">Tài khoản</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/auth/login}">Đăng nhập</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/auth/register}">Đăng ký</a>
+                </li>
+                <li class="nav-item">
+                    <form th:action="@{/auth/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-link nav-link p-0 d-inline">Đăng xuất</button>
+                    </form>
+                </li>
+            </ul>
         </div>
     </div>
-
 </nav>
 
 </body>

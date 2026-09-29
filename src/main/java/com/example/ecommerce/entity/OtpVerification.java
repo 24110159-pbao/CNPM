@@ -1,17 +1,13 @@
 package com.example.ecommerce.entity;
 
+import com.example.ecommerce.enums.OtpType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(
-        name = "otp_verifications",
-        indexes = {
-                @Index(name = "idx_otp_email", columnList = "email")
-        }
-)
+@Table(name = "otp_verifications")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,26 +19,23 @@ public class OtpVerification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 6)
     private String otp;
 
-    /*
-     * REGISTER hoặc FORGOT_PASSWORD
-     */
-    @Column(nullable = false, length = 30)
-    private String type;
-
-    @Column(name = "expires_at", nullable = false)
-    private LocalDateTime expiresAt;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OtpType type;
 
     @Column(nullable = false)
-    @Builder.Default
-    private Boolean verified = false;
+    private LocalDateTime createdAt;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(nullable = false)
+    private LocalDateTime expiresAt;
+
     @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(nullable = false)
+    private boolean verified = false;
 }

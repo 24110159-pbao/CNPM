@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header('Đăng nhập')}"></head>
+<body class="bg-light">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/messages :: messages}"></div>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h3 class="card-title text-center fw-bold mb-4">Đăng nhập tài khoản</h3>
+
+                    <div th:if="${param.error}" class="alert alert-danger">
+                        Email hoặc mật khẩu không chính xác!
+                    </div>
+                    <div th:if="${param.logout}" class="alert alert-info">
+                        Bạn đã đăng xuất thành công.
+                    </div>
+
+                    <form th:action="@{/auth/login}" method="post">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email:</label>
+                            <input type="email" id="email" name="email" class="form-control" required placeholder="nhapemail@example.com">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <label for="password" class="form-label">Mật khẩu:</label>
+                                <a th:href="@{/auth/forgot-password}" class="small text-decoration-none">Quên mật khẩu?</a>
+                            </div>
+                            <input type="password" id="password" name="password" class="form-control" required placeholder="••••••••">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 mt-2">Đăng nhập</button>
+                    </form>
+
+                    <div class="text-center mt-4 border-top pt-3">
+                        <span class="text-muted">Chưa có tài khoản?</span>
+                        <a th:href="@{/auth/register}" class="fw-bold text-decoration-none">Đăng ký ngay</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

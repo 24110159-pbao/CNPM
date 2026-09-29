@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header('Xác thực OTP & Hoàn tất đăng ký')}"></head>
+<body class="bg-light">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/messages :: messages}"></div>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h3 class="card-title text-center fw-bold mb-3">Xác thực OTP</h3>
+                    <p class="text-muted text-center small mb-4">
+                        Mã xác nhận 6 số đã được gửi tới email <strong th:text="${email}">email</strong>.
+                    </p>
+
+                    <form th:action="@{/auth/register}" method="post">
+                        <input type="hidden" name="email" th:value="${email}">
+
+                        <div class="mb-3">
+                            <label for="otp" class="form-label">Mã OTP (6 số):</label>
+                            <input type="text" id="otp" name="otp" class="form-control text-center fs-4 fw-bold" maxlength="6" required placeholder="123456">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Họ và tên:</label>
+                            <input type="text" id="name" name="name" class="form-control" required placeholder="Nguyễn Văn A">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mật khẩu:</label>
+                            <input type="password" id="password" name="password" class="form-control" required placeholder="Tối thiểu 6 ký tự">
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 py-2 mt-2">Tạo tài khoản</button>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <form th:action="@{/auth/send-register-otp}" method="post" class="d-inline">
+                            <input type="hidden" name="email" th:value="${email}">
+                            <button type="submit" class="btn btn-link btn-sm text-decoration-none">Gửi lại mã OTP</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

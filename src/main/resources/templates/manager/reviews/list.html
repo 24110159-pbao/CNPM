@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Đánh giá - Manager</title></head>
+<body>
+<h1>Quản lý Đánh giá</h1>
+<a href="/manager/dashboard">Dashboard</a>
+<hr>
+<div th:if="${success}" style="color:green" th:text="${success}"></div>
+
+<table border="1" cellpadding="8">
+  <thead>
+    <tr>
+      <th>ID</th><th>Sản phẩm</th><th>Người dùng</th><th>Rating</th><th>Nội dung</th><th>Ngày</th><th>Xóa</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="r : ${reviews.content}">
+      <td th:text="${r.id}"></td>
+      <td th:text="${r.product?.name}"></td>
+      <td th:text="${r.user?.email}"></td>
+      <td th:text="${r.rating}">★</td>
+      <td th:text="${r.content}"></td>
+      <td th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy')}"></td>
+      <td>
+        <form th:action="@{/manager/reviews/{id}/delete(id=${r.id})}" method="post"
+              onsubmit="return confirm('Xóa đánh giá này?')">
+          <button type="submit">Xóa</button>
+        </form>
+      </td>
+    </tr>
+    <tr th:if="${reviews.empty}">
+      <td colspan="7">Chưa có đánh giá.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div th:if="${reviews.totalPages > 1}">
+  <span th:each="i : ${#numbers.sequence(0, reviews.totalPages - 1)}">
+    <a th:href="@{/manager/reviews(page=${i})}" th:text="${i + 1}"
+       th:style="${i == reviews.number} ? 'font-weight:bold' : ''"></a>
+  </span>
+</div>
+</body>
+</html>

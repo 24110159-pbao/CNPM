@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header('Thông báo của tôi')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/messages :: messages}"></div>
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <div>
+            <h3 class="mb-0">🔔 Thông báo của bạn</h3>
+            <span class="text-muted small" th:if="${unreadCount > 0}">Bạn có <strong th:text="${unreadCount}">0</strong> thông báo chưa đọc.</span>
+        </div>
+        <form th:if="${unreadCount > 0}" th:action="@{/notifications/read-all}" method="post">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">Đánh dấu tất cả là đã đọc</button>
+        </form>
+    </div>
+
+    <div th:if="${notifications != null and notifications.totalElements > 0}">
+        <div class="list-group shadow-sm border mb-4">
+            <div th:each="notif : ${notifications.content}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start p-3" th:classappend="${!notif.isRead} ? 'bg-light border-start border-4 border-primary'">
+                <div class="ms-2 me-auto">
+                    <div class="fw-bold" th:text="${notif.title}">Tiêu đề thông báo</div>
+                    <div class="text-secondary mt-1" th:text="${notif.message}">Nội dung thông báo</div>
+                    <small class="text-muted" th:text="${#temporals.format(notif.createdAt, 'dd/MM/yyyy HH:mm')}"></small>
+                </div>
+                <form th:if="${!notif.isRead}" th:action="@{/notifications/{id}/read(id=${notif.id})}" method="post" class="ms-3">
+                    <button type="submit" class="btn btn-outline-primary btn-sm">Đã đọc</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Phân trang -->
+        <nav th:if="${notifications.totalPages > 1}" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${notifications.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/notifications(page=${notifications.number - 1})}">&laquo;</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, notifications.totalPages - 1)}" th:classappend="${i == notifications.number} ? 'active'">
+                    <a class="page-link" th:href="@{/notifications(page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${notifications.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/notifications(page=${notifications.number + 1})}">&raquo;</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div th:if="${notifications == null or notifications.totalElements == 0}" class="text-center py-5">
+        <p class="text-muted fs-5">Bạn chưa có thông báo nào.</p>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

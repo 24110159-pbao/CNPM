@@ -1,0 +1,1127 @@
+Tôi đang xây dựng một website thương mại điện tử bán sản phẩm bằng Java.
+1. Công nghệ bắt buộc
+Java 21
+
+
+Spring Boot
+
+
+Spring MVC
+
+
+Thymeleaf
+
+
+Spring Data JPA / Hibernate
+
+
+MySQL	
+
+
+Spring Security
+
+
+BCrypt để mã hóa mật khẩu
+
+
+Bootstrap Template để xây dựng giao diện
+
+
+Cloudinary để lưu trữ hình ảnh
+
+
+WebSocket để gửi thông báo realtime
+
+
+Spring Mail để gửi OTP Email cho đăng ký, quên mật khẩu
+
+
+Thanh toán:
+
+
+COD
+
+
+VNPay
+
+
+KHÔNG triển khai MoMo.
+
+
+Kiến trúc dự án sử dụng mô hình MVC:
+Browser → Controller → Service → Repository → MySQL
+Controller → Thymeleaf → HTML/CSS/Bootstrap
+Không sử dụng REST API + React/Vue/Angular cho giao diện chính. Frontend chính sử dụng Thymeleaf.
+
+2. Phân quyền hệ thống
+Hệ thống có 2 role chính:
+USER
+
+
+MANAGER
+
+
+Không cần tạo bảng roles riêng nếu không cần thiết. Có thể sử dụng Java Enum:
+public enum Role {
+    USER,
+    MANAGER
+}
+
+2.1. Guest
+Guest là người chưa đăng nhập.
+Guest được phép:
+Xem trang chủ.
+
+
+Xem danh sách sản phẩm.
+
+
+Tìm kiếm sản phẩm.
+
+
+Lọc sản phẩm.
+
+
+Xem sản phẩm mới.
+
+
+Xem sản phẩm theo danh mục.
+
+
+Xem chi tiết sản phẩm.
+
+
+Mỗi danh sách hiển thị 20 sản phẩm/trang.
+
+
+Có phân trang.
+
+
+Đăng ký tài khoản.
+
+
+Xác thực OTP Email khi đăng ký.
+
+
+Đăng nhập.
+
+
+
+Xác thực OTP Email khi quên mật khẩu.
+
+
+Guest KHÔNG được:
+Đặt hàng.
+
+
+Thanh toán.
+
+
+Sử dụng giỏ hàng database.
+
+
+Đánh giá sản phẩm.
+
+
+Xem lịch sử đơn hàng.
+
+
+Truy cập trang quản trị.
+
+
+3. USER
+User kế thừa toàn bộ chức năng của Guest.
+Ngoài ra User có:
+Profile
+Xem thông tin cá nhân.
+
+
+Cập nhật họ tên.
+
+
+Cập nhật số điện thoại.
+
+
+Cập nhật địa chỉ.
+
+
+Địa chỉ được lưu trực tiếp trong bảng users.
+KHÔNG tạo bảng user_addresses.
+Mỗi User hiện tại chỉ cần một địa chỉ nhận hàng.
+Ví dụ:
+users
+id = 1
+name = Nguyễn Văn A
+phone = 0909123456
+address = 123 Nguyễn Trãi, Quận 1, TP.HCM
+
+4. Giỏ hàng
+User có một giỏ hàng.
+Dữ liệu giỏ hàng phải được lưu trong Database, không chỉ lưu Session.
+Quan hệ:
+User 1 ─── 1 Cart
+Cart 1 ─── N CartItem
+Product 1 ─── N CartItem
+
+User có thể:
+Thêm sản phẩm vào giỏ.
+
+
+Tăng số lượng.
+
+
+Giảm số lượng.
+
+
+Xóa sản phẩm.
+
+
+Xem giỏ hàng.
+
+
+Giỏ hàng được giữ lại khi đăng xuất và đăng nhập lại.
+
+
+5. Đặt hàng
+User có thể đặt hàng từ giỏ hàng.
+Khi checkout:
+Chọn/sử dụng mã giảm giá.
+
+
+Xem tổng tiền.
+
+
+Xem số tiền được giảm.
+
+
+Xem số tiền cuối cùng.
+
+
+Nhập/xác nhận thông tin nhận hàng.
+
+
+Chọn phương thức thanh toán.
+
+
+Phương thức thanh toán:
+COD
+VNPAY
+
+Không có MoMo.
+6. Order Status
+Đơn hàng sử dụng Enum:
+
+public enum OrderStatus {
+    PENDING,
+    CONFIRMED,
+    SHIPPING,
+    DELIVERED,
+    CANCELLED,
+    RETURN_REQUESTED,
+    REFUNDED
+}
+
+Hiển thị cho User:
+
+PENDING           → Chờ xác nhận
+CONFIRMED         → Đã xác nhận
+SHIPPING          → Đang giao
+DELIVERED         → Đã giao
+CANCELLED         → Đã hủy
+RETURN_REQUESTED  → Yêu cầu trả hàng
+REFUNDED          → Đã hoàn tiền
+
+Quy tắc hủy/trả hàng:
+
+PENDING
+→ User được phép yêu cầu hủy đơn.
+
+CONFIRMED
+→ Không cho User yêu cầu hủy.
+
+SHIPPING
+→ Không cho User yêu cầu hủy.
+
+DELIVERED
+→ User được phép yêu cầu trả hàng/hoàn tiền.
+
+RETURN_REQUESTED
+→ Manager xử lý yêu cầu trả hàng.
+
+REFUNDED
+→ Hoàn tiền thành công.
+
+User có thể xem lịch sử đơn hàng và lọc đơn hàng theo trạng thái.
+7. Địa chỉ trong Order
+Mặc dù users có address, bảng orders vẫn phải lưu:
+recipient_name
+recipient_phone
+shipping_address
+
+Lý do: thông tin giao hàng phải được lưu dưới dạng snapshot tại thời điểm đặt hàng.
+Ví dụ:
+User hiện tại:
+address = 123 Nguyễn Trãi
+
+Đặt hàng:
+Order #001
+shipping_address = 123 Nguyễn Trãi
+
+Sau đó User đổi Profile:
+address = 456 Lê Lợi
+
+Order #001 vẫn phải giữ:
+shipping_address = 123 Nguyễn Trãi
+
+Không được làm thay đổi lịch sử đơn hàng.
+8. Product
+Product có:
+id
+category_id
+name
+description
+price
+stock
+image_url
+status
+created_at
+
+
+KHÔNG tạo bảng product_images.
+Chỉ cần một ảnh đại diện cho Product.
+Ảnh được upload lên Cloudinary.
+Database chỉ lưu URL:
+image_url
+
+Ví dụ:
+https://res.cloudinary.com/xxx/image/upload/abc123.jpg
+
+Nếu sau này cần nhiều ảnh mới xem xét mở rộng, hiện tại không làm phức tạp hệ thống.
+9. Category
+Product thuộc một Category.
+Ví dụ:
+Điện thoại
+Laptop
+Tai nghe
+Phụ kiện
+
+Quan hệ:
+Category 1 ─── N Product
+
+
+10. Discount Code
+Hệ thống chỉ cần một hệ thống mã giảm giá đơn giản để Manager quản lý.
+KHÔNG xây dựng hệ thống Promotion quá phức tạp.
+Manager tạo mã giảm giá bằng cách nhập:
+code
+discount_value
+quantity
+start_at
+end_at
+
+Ví dụ giảm theo phần trăm:
+Code: SALE20
+Value: 20
+Quantity: 100
+
+Có nghĩa:
+SALE20
+→ giảm 20%
+→ tổng cộng chỉ được sử dụng 100 lần
+chú ý user cấm dùng 2 lần trong cùng Order
+11. Review sản phẩm
+User có thể đánh giá sản phẩm sau khi mua.
+
+Chỉ cho phép Review khi:
+
+User đã mua Product
+AND
+Order chứa Product đó
+AND
+Order có trạng thái DELIVERED
+
+Review gồm:
+
+user_id
+product_id
+order_id
+rating
+comment
+created_at
+
+Rating từ 1 đến 5 sao.
+
+Ví dụ:
+
+Nguyễn Văn A
+★★★★★
+
+Sản phẩm tốt, giao hàng nhanh.
+
+order_id được lưu để xác định User thực sự đã mua sản phẩm.
+
+Không cho User đánh giá nhiều lần cùng một Product trong cùng một Order.
+
+Có thể sử dụng:
+
+UNIQUE(user_id, product_id, order_id)
+
+Manager có thể xem và xóa Review nếu cần.
+
+Không cần status cho Review.
+
+Không sử dụng WebSocket cho Review.
+
+12. Notification + WebSocket
+WebSocket chỉ dùng cho thông báo realtime, chủ yếu liên quan đến trạng thái đơn hàng.
+Ví dụ:
+User đặt:
+DH001
+PENDING
+
+Manager vào trang quản trị và đổi:
+PENDING
+↓
+CONFIRMED
+
+Backend thực hiện:
+1. Update Order
+2. Tạo Notification trong Database
+3. Gửi Notification qua WebSocket
+
+User đang mở website sẽ nhận ngay:
+🔔 Đơn hàng DH001 đã được xác nhận.
+
+Không cần F5.
+Nếu User offline:
+WebSocket không gửi được đến browser, nhưng Notification vẫn được lưu trong Database.
+Khi User đăng nhập lại:
+GET notifications
+↓
+Database
+↓
+Hiển thị notification chưa đọc
+
+Ví dụ:
+notifications
+
+id = 1
+user_id = 5
+title = "Đơn hàng đã được xác nhận"
+message = "Đơn hàng DH001 đã được xác nhận."
+type = "ORDER_STATUS"
+is_read = false
+
+Khi User click notification:
+is_read = true
+
+Notification dùng để lưu lịch sử.
+WebSocket dùng để đẩy realtime.
+Hai chức năng này bổ trợ cho nhau.
+13. Ví dụ hoàn chỉnh của WebSocket
+Luồng:
+User đặt hàng
+        ↓
+PENDING
+        ↓
+Manager xác nhận
+        ↓
+CONFIRMED
+        ↓
+Notification + WebSocket
+        ↓
+User thấy:
+"Đơn hàng DH001 đã được xác nhận"
+        ↓
+Manager bắt đầu giao
+        ↓
+SHIPPING
+        ↓
+Notification + WebSocket
+        ↓
+User thấy:
+"Đơn hàng DH001 đang được giao"
+        ↓
+Giao thành công
+        ↓
+DELIVERED
+        ↓
+Notification + WebSocket
+        ↓
+User thấy:
+"Đơn hàng DH001 đã giao thành công"
+        ↓
+User được phép Review
+
+14. Manager
+Manager là tài khoản quản trị hệ thống.
+Manager có:
+User Management
+Xem danh sách User.
+
+
+Tìm kiếm User.
+
+
+Xem thông tin User.
+
+
+
+Product Management
+Thêm Product.
+
+
+Sửa Product.
+
+
+Xóa Product.
+
+
+Quản lý giá.
+
+
+Quản lý tồn kho.
+
+
+Upload/thay đổi ảnh Product.
+
+
+Quản lý Category.
+
+
+Order Management
+Xem danh sách Order.
+
+
+Xem chi tiết Order.
+
+
+Cập nhật trạng thái Order.
+
+
+Xác nhận Order.
+
+
+Chuyển sang đang giao.
+
+
+Xác nhận đã giao.
+
+
+Hủy Order.
+
+
+Xử lý yêu cầu trả hàng/hoàn tiền.
+
+
+Khi trạng thái Order thay đổi, User có thể nhận Notification realtime qua WebSocket.
+Discount Management
+Manager có thể:
+Tạo mã giảm giá.
+
+
+Sửa mã giảm giá.
+
+
+Xóa/vô hiệu hóa mã giảm giá.
+
+
+Nhập mức giảm.
+
+
+Nhập số lượng mã(mỗi lần sử dụng thì trừ).
+
+
+Thiết lập thời gian hiệu lực.
+
+
+Revenue
+Manager có thể xem:
+Tổng doanh thu.
+
+
+Doanh thu theo khoảng thời gian.
+
+
+Số đơn hàng.
+
+
+Số đơn đã giao.
+
+
+Số đơn đã hủy.
+
+
+Statistics
+Có thể thống kê:
+Tổng User.
+
+
+Tổng Product.
+
+
+Tổng Order.
+
+
+Doanh thu.
+
+
+Order theo trạng thái.
+
+
+Review Management
+Manager có thể:
+Xem Review.
+
+
+Xem User nào đánh giá.
+
+
+Xem Product được đánh giá.
+
+
+Xem rating.
+
+
+Xem comment.
+
+
+Có thể ẩn/xóa Review
+
+
+15. Payment
+Payment được quản lý độc lập với Order Status.
+
+Payment Method
+public enum PaymentMethod {
+    COD,
+    VNPAY
+}
+
+Payment Status
+public enum PaymentStatus {
+    PENDING,
+    PAID,
+    FAILED,
+    REFUNDED
+}
+
+Ví dụ COD:
+
+Order: PENDING
+Payment Method: COD
+Payment Status: PENDING
+
+Khi đơn giao thành công:
+
+Order: DELIVERED
+Payment Status: PAID
+
+Ví dụ VNPay thanh toán thành công:
+
+Order: PENDING
+Payment Method: VNPAY
+Payment Status: PAID
+
+Nếu thanh toán VNPay thất bại:
+
+Payment Status: FAILED
+
+Nếu đơn được hoàn tiền:
+
+Payment Status: REFUNDED
+
+Bảng payments:
+
+id
+order_id
+method
+status
+transaction_no
+paid_at
+created_at
+
+Quan hệ:
+
+Order 1 ─── 1 Payment
+16. Database
+Database gồm các bảng chính:
+
+users
+
+categories
+
+products
+
+carts
+
+cart_items
+
+orders
+
+order_items
+
+discount_codes
+
+payments
+
+reviews
+
+otp_verifications
+
+notifications
+
+Không có:
+
+user_addresses
+product_images
+roles
+discount_usages
+
+vì muốn giữ database đơn giản.
+17. Pagination
+Các danh sách Product phải sử dụng pagination.
+Mỗi trang:
+20 products
+
+Ví dụ:
+Trang 1: Product 1 → 20
+Trang 2: Product 21 → 40
+Trang 3: Product 41 → 60
+
+Sử dụng Pageable và Page<Product> của Spring Data JPA.
+18. Authentication
+Sử dụng Spring Security.
+Password phải mã hóa bằng BCrypt.
+Không lưu password dạng plaintext.
+Flow đăng ký:
+Register
+   ↓
+Nhập Email
+   ↓
+Gửi OTP Email
+   ↓
+User nhập OTP
+   ↓
+OTP đúng
+   ↓
+Tạo tài khoản
+   ↓
+Login
+
+Flow quên mật khẩu:
+Forgot Password
+   ↓
+Nhập Email
+   ↓
+Gửi OTP
+   ↓
+Xác thực OTP
+   ↓
+Nhập Password mới
+   ↓
+BCrypt
+   ↓
+Update password
+
+OTP phải có thời gian hết hạn.
+19. Cloudinary
+Khi Manager upload ảnh Product:
+Browser
+   ↓
+Spring Boot
+   ↓
+Cloudinary
+   ↓
+image URL
+   ↓
+products.image_url
+
+Database không lưu file ảnh.
+Database chỉ lưu URL Cloudinary.
+
+20. Không tự ý mở rộng scope
+Khi phát triển dự án, không tự ý thêm các module phức tạp như:
+MoMo.
+
+
+Nhiều chi nhánh.
+
+
+Inventory service riêng.
+
+
+Product image table.
+
+
+User address table.
+
+
+Promotion engine phức tạp.
+
+
+Microservices.
+
+
+REST API riêng cho frontend.
+
+
+React/Vue/Angular.
+
+
+Redis nếu chưa thực sự cần.
+
+
+Kafka/RabbitMQ.
+
+
+Elasticsearch.
+
+
+Mục tiêu là xây dựng một monolithic Spring Boot MVC e-commerce application dễ hiểu, dễ triển khai và phù hợp với đồ án.
+Nếu cần mở rộng, phải hỏi trước thay vì tự ý thay đổi kiến trúc.
+
+21. Mục tiêu cuối cùng
+Đây là một website thương mại điện tử hoàn chỉnh với:
+Guest
+  ↓
+Browse Product
+  ↓
+Register / Login
+  ↓
+User
+  ↓
+Cart
+  ↓
+Checkout
+  ↓
+Discount
+  ↓
+COD / VNPay
+  ↓
+Order
+  ↓
+Manager xử lý
+  ↓
+WebSocket Notification
+  ↓
+Delivered
+  ↓
+User Review
+
+Kiến trúc chính:
+Java 21
+Spring Boot
+Spring MVC
+Thymeleaf
+Spring Security
+JPA/Hibernate
+MySQL
+Cloudinary
+WebSocket
+Spring Mail
+VNPay
+Bootstrap
+
+ecommerce/
+├── pom.xml
+├── mvnw
+├── mvnw.cmd
+│
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/
+│   │   │       └── example/
+│   │   │           └── ecommerce/
+│   │   │               │
+│   │   │               ├── EcommerceApplication.java
+│   │   │               │
+│   │   │               ├── config/
+│   │   │               │   ├── SecurityConfig.java
+│   │   │               │   ├── WebSocketConfig.java
+│   │   │               │   ├── CloudinaryConfig.java
+│   │   │               │   └── MailConfig.java
+│   │   │               │
+│   │   │               ├── controller/
+│   │   │               │   ├── HomeController.java
+│   │   │               │   ├── ProductController.java
+│   │   │               │   ├── CategoryController.java
+│   │   │               │   ├── AuthController.java
+│   │   │               │   ├── CartController.java
+│   │   │               │   ├── CheckoutController.java
+│   │   │               │   ├── OrderController.java
+│   │   │               │   ├── ReviewController.java
+│   │   │               │   ├── NotificationController.java
+│   │   │               │   └── ProfileController.java
+│   │   │               │
+│   │   │               │   └── manager/
+│   │   │               │       ├── ManagerDashboardController.java
+│   │   │               │       ├── ManagerUserController.java
+│   │   │               │       ├── ManagerProductController.java
+│   │   │               │       ├── ManagerCategoryController.java
+│   │   │               │       ├── ManagerOrderController.java
+│   │   │               │       ├── ManagerDiscountController.java	
+│   │   │               │       ├── ManagerReviewController.java
+│   │   │               │       └── ManagerRevenueController.java
+│   │   │               │
+│   │   │               ├── service/
+│   │   │               │   ├── UserService.java
+│   │   │               │   ├── ProductService.java
+│   │   │               │   ├── CategoryService.java
+│   │   │               │   ├── CartService.java
+│   │   │               │   ├── OrderService.java
+│   │   │               │   ├── DiscountService.java
+│   │   │               │   ├── ReviewService.java
+│   │   │               │   ├── NotificationService.java
+│   │   │               │   ├── OtpService.java
+│   │   │               │   ├── EmailService.java
+│   │   │               │   ├── PaymentService.java
+│   │   │               │   ├── CloudinaryService.java
+│   │   │               │   ├── VnPayService.java
+│   │   │               │   └── WebSocketNotificationService.java
+│   │   │               │
+│   │   │               ├── repository/
+│   │   │               │   ├── UserRepository.java
+│   │   │               │   ├── ProductRepository.java
+│   │   │               │   ├── CategoryRepository.java
+│   │   │               │   ├── CartRepository.java
+│   │   │               │   ├── CartItemRepository.java
+│   │   │               │   ├── OrderRepository.java
+│   │   │               │   ├── OrderItemRepository.java
+│   │   │               │   ├── DiscountCodeRepository.java
+│   │   │               │   ├── PaymentRepository.java
+│   │   │               │   ├── ReviewRepository.java
+│   │   │               │   ├── OtpVerificationRepository.java
+│   │   │               │   └── NotificationRepository.java
+│   │   │               │
+│   │   │               ├── entity/
+│   │   │               │   ├── User.java
+│   │   │               │   ├── Product.java
+│   │   │               │   ├── Category.java
+│   │   │               │   ├── Cart.java
+│   │   │               │   ├── CartItem.java
+│   │   │               │   ├── Order.java
+│   │   │               │   ├── OrderItem.java
+│   │   │               │   ├── DiscountCode.java
+│   │   │               │   ├── Payment.java
+│   │   │               │   ├── Review.java
+│   │   │               │   ├── OtpVerification.java
+│   │   │               │   └── Notification.java
+│   │   │               │
+│   │   │               ├── enums/
+│   │   │               │   ├── Role.java
+│   │   │               │   ├── OrderStatus.java
+│   │   │               │   ├── PaymentMethod.java
+│   │   │               │   ├── PaymentStatus.java
+│   │   │               │   ├── OtpType.java
+│   │   │               │   └── NotificationType.java
+│   │   │               │
+│   │   │               ├── security/
+│   │   │               │   ├── CustomUserDetails.java
+│   │   │               │   └── CustomUserDetailsService.java
+│   │   │               │
+│   │   │               ├── websocket/
+│   │   │               │   └── WebSocketController.java
+│   │   │               │
+│   │   │               ├── payment/
+│   │   │               │   └── vnpay/
+│   │   │               │       ├── VnPayConfig.java
+│   │   │               │       └── VnPayUtil.java
+│   │   │               │
+│   │   │               └── exception/
+│   │   │                   ├── ResourceNotFoundException.java
+│   │   │                   ├── BusinessException.java
+│   │   │                   ├── GlobalExceptionHandler.java
+│   │   │                   └── ErrorCode.java
+│   │   │
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       │
+│   │       ├── static/
+│   │       │   ├── css/
+│   │       │   │   ├── style.css
+│   │       │   │   ├── auth.css
+│   │       │   │   ├── product.css
+│   │       │   │   ├── cart.css
+│   │       │   │   └── manager.css
+│   │       │   │
+│   │       │   ├── js/
+│   │       │   │   ├── main.js
+│   │       │   │   ├── cart.js
+│   │       │   │   ├── notification.js
+│   │       │   │   └── manager.js
+│   │       │   │
+│   │       │   └── images/
+│   │       │
+│   │       └── templates/
+│   │           ├── fragments/
+│   │           │   ├── header.html
+│   │           │   ├── navbar.html
+│   │           │   ├── footer.html
+│   │           │   ├── pagination.html
+│   │           │   ├── notification.html
+│   │           │   └── messages.html
+│   │           │
+│   │           ├── home/
+│   │           │   └── index.html
+│   │           │
+│   │           ├── product/
+│   │           │   ├── list.html
+│   │           │   ├── detail.html
+│   │           │   └── search.html
+│   │           │
+│   │           ├── category/
+│   │           │   └── list.html
+│   │           │
+│   │           ├── auth/
+│   │           │   ├── login.html
+│   │           │   ├── register.html
+│   │           │   ├── verify-otp.html
+│   │           │   ├── forgot-password.html
+│   │           │   ├── reset-password.html
+│   │           │   └── access-denied.html
+│   │           │
+│   │           ├── cart/
+│   │           │   └── cart.html
+│   │           │
+│   │           ├── checkout/
+│   │           │   └── checkout.html
+│   │           │
+│   │           ├── order/
+│   │           │   ├── list.html
+│   │           │   ├── detail.html
+│   │           │   └── payment-result.html
+│   │           │
+│   │           ├── profile/
+│   │           │   └── profile.html
+│   │           │
+│   │           ├── review/
+│   │           │   └── form.html
+│   │           │
+│   │           └── manager/
+│   │               ├── dashboard.html
+│   │               │
+│   │               ├── users/
+│   │               │   ├── list.html
+│   │               │   └── detail.html
+│   │               │
+│   │               ├── products/
+│   │               │   ├── list.html
+│   │               │   ├── form.html
+│   │               │   └── detail.html
+│   │               │
+│   │               ├── categories/
+│   │               │   ├── list.html
+│   │               │   └── form.html
+│   │               │
+│   │               ├── orders/
+│   │               │   ├── list.html
+│   │               │   └── detail.html
+│   │               │
+│   │               ├── discounts/
+│   │               │   ├── list.html
+│   │               │   └── form.html
+│   │               │
+│   │               └── reviews/
+│   │                   └── list.html
+│   │
+
+chú ý
+public enum PaymentStatus {
+    PENDING,
+    PAID,
+    FAILED,
+    REFUNDED
+}
+
+@Getter
+@Setter
+public class CheckoutRequest {
+
+    private String recipientName;
+
+    private String recipientPhone;
+
+    private String shippingAddress;
+
+    private String discountCode;
+
+    private PaymentMethod paymentMethod;
+}
+
+bổ sung PaymentController.java
+@Controller
+@RequestMapping("/payment")
+@RequiredArgsConstructor
+public class PaymentController {
+
+    private final VnPayService vnPayService;
+    private final PaymentService paymentService;
+
+    @GetMapping("/vnpay-return")
+    public String vnpayReturn(
+            HttpServletRequest request) {
+
+        VnPayResult result =
+                vnPayService.verifyReturn(request);
+
+        if (result.isValid()) {
+
+            paymentService.handleVnPayResult(result);
+
+            return "redirect:/orders/"
+                    + result.getOrderId();
+        }
+
+        return "redirect:/orders/payment-result?status=invalid";
+    }
+}
+
+những câu hỏi AI hỏi và tôi đã chốt 
+Email User có unique không? → Có, email UNIQUE.
+
+
+Product status dùng Enum hay boolean? → boolean.
+
+
+Discount chỉ giảm theo phần trăm? → Đúng.
+
+
+Discount quantity là số lượt còn lại, mỗi lần dùng trừ 1? → Đúng.
+
+
+Một Order chỉ được dùng tối đa 1 DiscountCode? → Đúng.
+
+
+OrderItem có lưu giá sản phẩm tại thời điểm mua không? → Có, dùng price snapshot.
+
+
+Product xóa thế nào? → Xóa thật khỏi database; khi triển khai sẽ chú ý vấn đề FK với OrderItem/Review/CartItem, không tự ý soft delete.
+
+
+User có chức năng tự xóa tài khoản không? → Không.
+
+
+OTP lưu plaintext hay hash? → Plaintext.
+
+
+Một Cart có thể có cùng Product ở nhiều CartItem không? → Không, dùng UNIQUE(cart_id, product_id).
+
+
+Review có UNIQUE(user_id, product_id, order_id) không? → Có.
+
+
+Payment có quan hệ Order 1–1 và độc lập với OrderStatus không? → Đúng.
+
+
+Notification có created_at không? → Có.
+
+
+ID Entity dùng Long + GenerationType.IDENTITY? → Đúng.
+
+
+Các trường tiền dùng BigDecimal? → Đúng.
+
+
+

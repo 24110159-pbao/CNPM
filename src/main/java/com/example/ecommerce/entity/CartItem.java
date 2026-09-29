@@ -8,7 +8,7 @@ import lombok.*;
         name = "cart_items",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_cart_product",
+                        name = "uk_cart_items_cart_product",
                         columnNames = {"cart_id", "product_id"}
                 )
         }
@@ -28,7 +28,7 @@ public class CartItem {
     @JoinColumn(
             name = "cart_id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_cart_item_cart")
+            foreignKey = @ForeignKey(name = "fk_cart_items_cart")
     )
     private Cart cart;
 
@@ -36,7 +36,7 @@ public class CartItem {
     @JoinColumn(
             name = "product_id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_cart_item_product")
+            foreignKey = @ForeignKey(name = "fk_cart_items_product")
     )
     private Product product;
 
