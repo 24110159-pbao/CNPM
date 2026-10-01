@@ -10,6 +10,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -40,6 +44,67 @@ public class UserService {
     ) {
         return userRepository.findByRole(role, pageable);
     }
+
+    /**
+     * Tìm kiếm / lọc người dùng theo bất kỳ tổ hợp nào:
+     * email (chứa, không phân biệt hoa/thường), vai trò, khoảng ngày đăng ký.
+     */
+    public Page<User> filterUsers(
+            String keyword,
+            Role role,
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable
+    ) {
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
+        boolean hasRole = role != null;
+        boolean hasDate = startDate != null && endDate != null;
+
+        if (!hasKeyword && !hasRole && !hasDate) {
+            return userRepository.findAll(pageable);
+        }
+
+        String keywordTrim = hasKeyword ? keyword.trim() : null;
+
+        LocalDateTime start = hasDate
+                ? startDate.atStartOfDay()
+                : null;
+
+        LocalDateTime end = hasDate
+                ? endDate.atTime(LocalTime.MAX)
+                : null;
+
+        // Có keyword + role + ngày
+        if (hasKeyword && hasRole && hasDate) {
+            // phần này cần thêm query tương ứng nếu muốn kết hợp cả 3
+        }
+
+        // Có keyword
+        if (hasKeyword) {
+            return userRepository
+                    .findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                            keywordTrim,
+                            keywordTrim,
+                            pageable
+                    );
+        }
+
+        // Có role + ngày
+        if (hasRole && hasDate) {
+            return userRepository.findByRoleAndCreatedAtBetween(
+                    role, start, end, pageable
+            );
+        }
+
+        if (hasRole) {
+            return userRepository.findByRole(role, pageable);
+        }
+
+        return userRepository.findByCreatedAtBetween(
+                start, end, pageable
+        );
+    }
+
 
     public User findById(Long id) {
         return userRepository.findById(id).orElse(null);

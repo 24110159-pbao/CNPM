@@ -12,6 +12,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+
 @Controller
 @RequestMapping("/manager/users")
 @RequiredArgsConstructor
@@ -24,28 +26,32 @@ public class ManagerUserController {
     @GetMapping
     public String list(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Role role,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
             @PageableDefault(size = 20) Pageable pageable,
             Model model) {
 
-        if (keyword == null || keyword.isBlank()) {
-            model.addAttribute(
-                    "users",
-                    userService.getAllUsers(pageable)
-            );
-        } else {
-            model.addAttribute(
-                    "users",
-                    userService.searchUsers(
-                            keyword,
-                            pageable
-                    )
-            );
-        }
+        model.addAttribute(
+                "users",
+                userService.filterUsers(
+                        keyword,
+                        role,
+                        startDate,
+                        endDate,
+                        pageable
+                )
+        );
 
         model.addAttribute("keyword", keyword);
+        model.addAttribute("selectedRole", role);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+        model.addAttribute("roles", Role.values());
 
         return "manager/users/list";
     }
+
 
     @GetMapping("/{id}")
     public String detail(

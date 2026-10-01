@@ -8,16 +8,29 @@
 <div th:if="${success}" style="color:green" th:text="${success}"></div>
 
 <form method="get" action="/manager/orders">
-  <label>Lọc trạng thái:</label>
-  <select name="status" onchange="this.form.submit()">
+  <label>Trạng thái:</label>
+  <select name="status">
     <option value="">-- Tất cả --</option>
     <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
             th:selected="${s == selectedStatus}"></option>
   </select>
-  <span th:if="${selectedStatus}">
-    <a href="/manager/orders">Bỏ lọc</a>
-  </span>
+
+  <label>Từ ngày:</label>
+  <input type="date" name="startDate" th:value="${startDate}">
+
+  <label>Đến ngày:</label>
+  <input type="date" name="endDate" th:value="${endDate}">
+
+  <button type="submit">Lọc</button>
+
+  <a th:if="${selectedStatus != null or startDate != null}" href="/manager/orders">Xóa bộ lọc</a>
 </form>
+
+<p>
+  <span th:if="${selectedStatus != null}">Trạng thái: <b th:text="${selectedStatus}"></b> &nbsp;</span>
+  <span th:if="${startDate != null}">Từ: <b th:text="${startDate}"></b> &nbsp;</span>
+  <span th:if="${endDate != null}">Đến: <b th:text="${endDate}"></b></span>
+</p>
 
 <table border="1" cellpadding="8">
   <thead>
@@ -36,14 +49,15 @@
       <td><a th:href="@{/manager/orders/{id}(id=${o.id})}">Xem</a></td>
     </tr>
     <tr th:if="${orders.empty}">
-      <td colspan="7">Không có đơn hàng.</td>
+      <td colspan="7">Không có đơn hàng phù hợp.</td>
     </tr>
   </tbody>
 </table>
 
 <div th:if="${orders.totalPages > 1}">
   <span th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}">
-    <a th:href="@{/manager/orders(page=${i}, status=${selectedStatus})}" th:text="${i + 1}"
+    <a th:href="@{/manager/orders(page=${i}, status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}"
+       th:text="${i + 1}"
        th:style="${i == orders.number} ? 'font-weight:bold' : ''"></a>
   </span>
 </div>

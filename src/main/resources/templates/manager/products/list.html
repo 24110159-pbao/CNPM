@@ -24,12 +24,12 @@
       <td th:text="${p.category?.name}"></td>
       <td th:text="${p.price}"></td>
       <td th:text="${p.stock}"></td>
-      <td th:text="${p.active} ? 'Hoạt động' : 'Ẩn'"></td>
+      <td th:text="${p.status} ? 'Hoạt động' : 'Ẩn'"></td>
       <td>
         <a th:href="@{/manager/products/{id}/edit(id=${p.id})}">Sửa</a>
         <form th:action="@{/manager/products/{id}/toggle-status(id=${p.id})}" method="post" style="display:inline">
-          <input type="hidden" name="status" th:value="${!p.active}">
-          <button type="submit" th:text="${p.active} ? 'Ẩn' : 'Hiện'"></button>
+          <input type="hidden" name="status" th:value="${!p.status}">
+          <button type="submit" th:text="${p.status} ? 'Ẩn' : 'Hiện'"></button>
         </form>
         <form th:action="@{/manager/products/{id}/delete(id=${p.id})}" method="post" style="display:inline"
               onsubmit="return confirm('Xóa sản phẩm này?')">

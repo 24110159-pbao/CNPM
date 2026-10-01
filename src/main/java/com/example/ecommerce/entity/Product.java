@@ -57,4 +57,12 @@ public class Product {
             status = true;
         }
     }
+
+    @OneToOne(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private ProductSpec productSpec;
+
 }

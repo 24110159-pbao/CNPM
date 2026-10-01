@@ -1,45 +1,126 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Người dùng - Manager</title></head>
-<body>
-<h1>Quản lý Người dùng</h1>
+<!DOCTYPE html> <html xmlns:th="http://www.thymeleaf.org"> <head> <meta charset="UTF-8"> <title>Người dùng - Manager</title> </head> <body> <h1>Quản lý Người dùng</h1>
+
 <a href="/manager/dashboard">Dashboard</a>
-<hr>
-<div th:if="${success}" style="color:green" th:text="${success}"></div>
 
-<form method="get" action="/manager/users">
-  <input type="text" name="keyword" placeholder="Tìm theo email/tên..." th:value="${keyword}">
-  <button type="submit">Tìm</button>
-  <a th:if="${keyword}" href="/manager/users">Xóa lọc</a>
-</form>
-<br>
-<table border="1" cellpadding="8">
+<hr> <!-- Thông báo thành công --> <div th:if="${success}" style="color: green" th:text="${success}"> </div> <!-- Form tìm kiếm / lọc --> <form method="get" action="/manager/users">
+  <label>Tìm kiếm:</label>
+  <input type="text"
+         name="keyword"
+         placeholder="Tìm theo tên hoặc email..."
+         th:value="${keyword}">
+
+  <label>Vai trò:</label>
+  <select name="role">
+    <option value="">-- Tất cả --</option>
+
+    <option th:each="r : ${roles}"
+            th:value="${r}"
+            th:text="${r}"
+            th:selected="${r == selectedRole}">
+    </option>
+  </select>
+
+  <label>Đăng ký từ:</label>
+  <input type="date"
+         name="startDate"
+         th:value="${startDate}">
+
+  <label>Đến:</label>
+  <input type="date"
+         name="endDate"
+         th:value="${endDate}">
+
+  <button type="submit">Lọc</button>
+
+  <!-- Xóa bộ lọc -->
+  <a th:if="${keyword != null or selectedRole != null or startDate != null or endDate != null}"
+     href="/manager/users">
+    Xóa bộ lọc
+  </a>
+
+</form> <hr> <!-- Hiển thị điều kiện đang lọc --> <p>
+<span th:if="${keyword != null and !#strings.isEmpty(keyword)}">
+    Tìm kiếm:
+    <b th:text="${keyword}"></b>
+    &nbsp;
+</span>
+
+  <span th:if="${selectedRole != null}">
+    Vai trò:
+    <b th:text="${selectedRole}"></b>
+    &nbsp;
+</span>
+
+  <span th:if="${startDate != null}">
+    Từ:
+    <b th:text="${startDate}"></b>
+    &nbsp;
+</span>
+
+  <span th:if="${endDate != null}">
+    Đến:
+    <b th:text="${endDate}"></b>
+</span>
+
+</p> <!-- Danh sách người dùng --> <table border="1" cellpadding="8">
   <thead>
-    <tr>
-      <th>ID</th><th>Email</th><th>Họ tên</th><th>Vai trò</th><th>Trạng thái</th><th>Ngày đăng ký</th><th>Chi tiết</th>
-    </tr>
+  <tr>
+    <th>ID</th>
+    <th>Email</th>
+    <th>Họ tên</th>
+    <th>Vai trò</th>
+    <th>Ngày đăng ký</th>
+    <th>Chi tiết</th>
+  </tr>
   </thead>
-  <tbody>
-    <tr th:each="u : ${users.content}">
-      <td th:text="${u.id}"></td>
-      <td th:text="${u.email}"></td>
-      <td th:text="${u.fullName}"></td>
-      <td th:text="${u.role}"></td>
-      <td th:text="${u.enabled} ? 'Hoạt động' : 'Bị khóa'"></td>
-      <td th:text="${#temporals.format(u.createdAt, 'dd/MM/yyyy')}"></td>
-      <td><a th:href="@{/manager/users/{id}(id=${u.id})}">Xem</a></td>
-    </tr>
-    <tr th:if="${users.empty}">
-      <td colspan="7">Không tìm thấy người dùng.</td>
-    </tr>
-  </tbody>
-</table>
 
-<div th:if="${users.totalPages > 1}">
-  <span th:each="i : ${#numbers.sequence(0, users.totalPages - 1)}">
-    <a th:href="@{/manager/users(page=${i}, keyword=${keyword})}" th:text="${i + 1}"
-       th:style="${i == users.number} ? 'font-weight:bold' : ''"></a>
-  </span>
-</div>
-</body>
-</html>
+  <tbody>
+
+  <tr th:each="u : ${users.content}">
+
+    <td th:text="${u.id}"></td>
+
+    <td th:text="${u.email}"></td>
+
+    <td th:text="${u.name}"></td>
+
+    <td th:text="${u.role}"></td>
+
+    <td th:text="${#temporals.format(u.createdAt, 'dd/MM/yyyy')}"></td>
+
+    <td>
+      <a th:href="@{/manager/users/{id}(id=${u.id})}">
+        Xem
+      </a>
+    </td>
+
+  </tr>
+
+  <!-- Không có kết quả -->
+  <tr th:if="${users.empty}">
+
+    <td colspan="6">
+      Không tìm thấy người dùng phù hợp.
+    </td>
+
+  </tr>
+
+  </tbody>
+
+</table> <!-- Pagination --> <div th:if="${users.totalPages > 1}">
+<span th:each="i : ${#numbers.sequence(0, users.totalPages - 1)}">
+
+    <a th:href="@{/manager/users(
+            page=${i},
+            keyword=${keyword},
+            role=${selectedRole},
+            startDate=${startDate},
+            endDate=${endDate}
+        )}"
+       th:text="${i + 1}"
+       th:style="${i == users.number} ? 'font-weight:bold' : ''">
+    </a>
+
+</span>
+
+</div> </body> </html>

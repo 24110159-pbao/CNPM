@@ -12,11 +12,10 @@
 <table border="1" cellpadding="8">
   <tr><td>ID</td><td th:text="${user.id}"></td></tr>
   <tr><td>Email</td><td th:text="${user.email}"></td></tr>
-  <tr><td>Họ tên</td><td th:text="${user.fullName}"></td></tr>
+  <tr><td>Họ tên</td><td th:text="${user.name}"></td></tr>
   <tr><td>SĐT</td><td th:text="${user.phone}"></td></tr>
   <tr><td>Địa chỉ</td><td th:text="${user.address}"></td></tr>
   <tr><td>Vai trò</td><td th:text="${user.role}"></td></tr>
-  <tr><td>Trạng thái</td><td th:text="${user.enabled} ? 'Hoạt động' : 'Bị khóa'"></td></tr>
   <tr><td>Ngày đăng ký</td><td th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}"></td></tr>
 </table>
 

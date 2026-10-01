@@ -48,6 +48,51 @@
                 <h5 class="fw-bold">Mô tả sản phẩm:</h5>
                 <p class="text-muted" th:text="${product.description}">Mô tả chi tiết sản phẩm.</p>
             </div>
+            <div class="border-top pt-3 mt-3"
+                 th:if="${product.productSpec != null}">
+
+                <h5 class="fw-bold mb-3">Thông số sản phẩm:</h5>
+
+                <table class="table table-bordered">
+                    <tbody>
+
+                    <tr th:if="${product.productSpec.ram != null
+                    and !product.productSpec.ram.isEmpty()}">
+                        <th style="width: 40%;">RAM</th>
+                        <td th:text="${product.productSpec.ram}">8GB</td>
+                    </tr>
+
+                    <tr th:if="${product.productSpec.storage != null
+                    and !product.productSpec.storage.isEmpty()}">
+                        <th>Bộ nhớ trong</th>
+                        <td th:text="${product.productSpec.storage}">256GB</td>
+                    </tr>
+
+                    <tr th:if="${product.productSpec.color != null
+                    and !product.productSpec.color.isEmpty()}">
+                        <th>Màu sắc</th>
+                        <td th:text="${product.productSpec.color}">Đen</td>
+                    </tr>
+
+                    <tr th:if="${product.productSpec.screenSize != null
+                    and !product.productSpec.screenSize.isEmpty()}">
+                        <th>Kích thước màn hình</th>
+                        <td th:text="${product.productSpec.screenSize}">
+                            6.7 inch
+                        </td>
+                    </tr>
+
+                    <tr th:if="${product.productSpec.battery != null
+                    and !product.productSpec.battery.isEmpty()}">
+                        <th>Dung lượng pin</th>
+                        <td th:text="${product.productSpec.battery}">
+                            5000mAh
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

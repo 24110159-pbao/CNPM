@@ -37,6 +37,45 @@
     <input type="number" name="stock" min="0" required th:value="${product?.stock}">
   </div>
   <div>
+    <label>RAM:</label><br>
+    <input type="text"
+           name="ram"
+           placeholder="Ví dụ: 8GB"
+           th:value="${product?.productSpec?.ram}">
+  </div>
+
+  <div>
+    <label>Bộ nhớ trong:</label><br>
+    <input type="text"
+           name="storage"
+           placeholder="Ví dụ: 256GB"
+           th:value="${product?.productSpec?.storage}">
+  </div>
+
+  <div>
+    <label>Màu sắc:</label><br>
+    <input type="text"
+           name="color"
+           placeholder="Ví dụ: Đen"
+           th:value="${product?.productSpec?.color}">
+  </div>
+
+  <div>
+    <label>Kích thước màn hình:</label><br>
+    <input type="text"
+           name="screenSize"
+           placeholder="Ví dụ: 6.7 inch"
+           th:value="${product?.productSpec?.screenSize}">
+  </div>
+
+  <div>
+    <label>Dung lượng pin:</label><br>
+    <input type="text"
+           name="battery"
+           placeholder="Ví dụ: 5000mAh"
+           th:value="${product?.productSpec?.battery}">
+  </div>
+  <div>
     <label>Ảnh sản phẩm (để trống nếu không thay đổi):</label><br>
     <img th:if="${product?.imageUrl}" th:src="${product.imageUrl}" width="100"><br>
     <input type="file" name="image" accept="image/*">

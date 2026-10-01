@@ -55,6 +55,12 @@ public class ManagerProductController {
             @RequestParam java.math.BigDecimal price,
             @RequestParam Integer stock,
             @RequestParam(required = false) MultipartFile image,
+            @RequestParam(required = false) String ram,
+            @RequestParam(required = false) String storage,
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false) String screenSize,
+            @RequestParam(required = false) String battery,
+
             RedirectAttributes redirectAttributes) {
 
         productService.createProduct(
@@ -63,7 +69,12 @@ public class ManagerProductController {
                 price,
                 stock,
                 categoryId,
-                image
+                image,
+                ram,
+                storage,
+                color,
+                screenSize,
+                battery
         );
 
         redirectAttributes.addFlashAttribute(
@@ -101,6 +112,11 @@ public class ManagerProductController {
             @RequestParam java.math.BigDecimal price,
             @RequestParam Integer stock,
             @RequestParam(required = false) MultipartFile image,
+            @RequestParam(required = false) String ram,
+            @RequestParam(required = false) String storage,
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false) String screenSize,
+            @RequestParam(required = false) String battery,
             RedirectAttributes redirectAttributes) {
 
         productService.updateProduct(
@@ -110,7 +126,12 @@ public class ManagerProductController {
                 price,
                 stock,
                 categoryId,
-                image
+                image,
+                ram,
+                storage,
+                color,
+                screenSize,
+                battery
         );
 
         redirectAttributes.addFlashAttribute(

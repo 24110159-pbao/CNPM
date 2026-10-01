@@ -12,7 +12,7 @@
 <table border="1" cellpadding="8">
   <thead>
     <tr>
-      <th>ID</th><th>Mã</th><th>Giảm (%)</th><th>Số lượng</th><th>Đã dùng</th>
+      <th>ID</th><th>Mã</th><th>Giảm (%)</th><th>Số lượng</th>
       <th>Bắt đầu</th><th>Kết thúc</th><th>Hành động</th>
     </tr>
   </thead>
@@ -22,7 +22,6 @@
       <td th:text="${d.code}"></td>
       <td th:text="${d.discountValue}"></td>
       <td th:text="${d.quantity}"></td>
-      <td th:text="${d.usedCount}"></td>
       <td th:text="${#temporals.format(d.startAt, 'dd/MM/yyyy HH:mm')}"></td>
       <td th:text="${#temporals.format(d.endAt, 'dd/MM/yyyy HH:mm')}"></td>
       <td>
@@ -34,7 +33,7 @@
       </td>
     </tr>
     <tr th:if="${discounts.empty}">
-      <td colspan="8">Chưa có mã giảm giá.</td>
+      <td colspan="7">Chưa có mã giảm giá.</td>
     </tr>
   </tbody>
 </table>

@@ -5,6 +5,8 @@ import com.example.ecommerce.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -37,6 +39,20 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             Long userId
     );
 
+    // --- Lọc theo ngày đặt ---
+    Page<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(
+            LocalDateTime start,
+            LocalDateTime end,
+            Pageable pageable
+    );
+
+    Page<Order> findByStatusAndCreatedAtBetweenOrderByCreatedAtDesc(
+            OrderStatus status,
+            LocalDateTime start,
+            LocalDateTime end,
+            Pageable pageable
+    );
+
     long countByStatus(OrderStatus status);
 
     long countByUserId(Long userId);
@@ -52,13 +68,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             LocalDateTime end
     );
 
-    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(SUM(o.finalAmount), 0) FROM Order o WHERE o.status = :status")
-    BigDecimal sumFinalAmountByStatus(@org.springframework.data.repository.query.Param("status") OrderStatus status);
+    @Query("SELECT COALESCE(SUM(o.finalAmount), 0) FROM Order o WHERE o.status = :status")
+    BigDecimal sumFinalAmountByStatus(@Param("status") OrderStatus status);
 
-    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(SUM(o.finalAmount), 0) FROM Order o WHERE o.status = :status AND o.createdAt BETWEEN :start AND :end")
+    @Query("SELECT COALESCE(SUM(o.finalAmount), 0) FROM Order o WHERE o.status = :status AND o.createdAt BETWEEN :start AND :end")
     BigDecimal sumFinalAmountByStatusAndCreatedAtBetween(
-            @org.springframework.data.repository.query.Param("status") OrderStatus status,
-            @org.springframework.data.repository.query.Param("start") LocalDateTime start,
-            @org.springframework.data.repository.query.Param("end") LocalDateTime end
+            @Param("status") OrderStatus status,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
     );
 }

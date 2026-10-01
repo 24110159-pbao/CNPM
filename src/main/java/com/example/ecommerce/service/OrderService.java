@@ -18,6 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Service
 @RequiredArgsConstructor
@@ -75,6 +78,27 @@ public class OrderService {
                 status,
                 pageable
         );
+    }
+
+    public Page<Order> getOrdersByDateRange(
+            OrderStatus status,
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable
+    ) {
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.atTime(LocalTime.MAX);
+
+        if (status != null) {
+            return orderRepository
+                    .findByStatusAndCreatedAtBetweenOrderByCreatedAtDesc(
+                            status, start, end, pageable
+                    );
+        }
+        return orderRepository
+                .findByCreatedAtBetweenOrderByCreatedAtDesc(
+                        start, end, pageable
+                );
     }
 
     @Transactional

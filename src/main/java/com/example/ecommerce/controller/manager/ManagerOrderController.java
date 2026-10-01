@@ -18,6 +18,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+
 @Controller
 @RequestMapping("/manager/orders")
 @RequiredArgsConstructor
@@ -32,16 +34,21 @@ public class ManagerOrderController {
     @GetMapping
     public String list(
             @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
             @PageableDefault(size = 20) Pageable pageable,
             Model model) {
 
-        if (status != null) {
+        // Nếu có khoảng ngày thì dùng filter ngày (có thể kết hợp status)
+        if (startDate != null && endDate != null) {
             model.addAttribute(
                     "orders",
-                    orderService.getOrdersByStatus(
-                            status,
-                            pageable
-                    )
+                    orderService.getOrdersByDateRange(status, startDate, endDate, pageable)
+            );
+        } else if (status != null) {
+            model.addAttribute(
+                    "orders",
+                    orderService.getOrdersByStatus(status, pageable)
             );
         } else {
             model.addAttribute(
@@ -50,15 +57,10 @@ public class ManagerOrderController {
             );
         }
 
-        model.addAttribute(
-                "statuses",
-                OrderStatus.values()
-        );
-
-        model.addAttribute(
-                "selectedStatus",
-                status
-        );
+        model.addAttribute("statuses", OrderStatus.values());
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
 
         return "manager/orders/list";
     }

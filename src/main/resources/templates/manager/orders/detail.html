@@ -12,8 +12,8 @@
 <table border="1" cellpadding="8">
   <tr><td>Khách hàng</td><td th:text="${order.user?.email}"></td></tr>
   <tr><td>Địa chỉ giao hàng</td><td th:text="${order.shippingAddress}"></td></tr>
-  <tr><td>SĐT</td><td th:text="${order.shippingPhone}"></td></tr>
-  <tr><td>Tên người nhận</td><td th:text="${order.shippingName}"></td></tr>
+  <tr><td>SĐT</td><td th:text="${order.recipientPhone}"></td></tr>
+  <tr><td>Tên người nhận</td><td th:text="${order.recipientName}"></td></tr>
   <tr><td>Mã giảm giá</td><td th:text="${order.discountCode}"></td></tr>
   <tr><td>Giảm giá</td><td th:text="${order.discountAmount}"></td></tr>
   <tr><td>Tổng tiền</td><td th:text="${order.finalAmount}"></td></tr>
@@ -26,7 +26,7 @@
   <tr><td>Phương thức</td><td th:text="${payment.method}"></td></tr>
   <tr><td>Trạng thái thanh toán</td><td th:text="${payment.status}"></td></tr>
   <tr><td>Ngày thanh toán</td>
-    <td th:text="${payment.paidAt != null} ? ${#temporals.format(payment.paidAt, 'dd/MM/yyyy HH:mm')} : '-'"></td>
+    <td th:text="${payment.paidAt != null ? #temporals.format(payment.paidAt, 'dd/MM/yyyy HH:mm') : '-'}"></td>
   </tr>
 </table>
 <p th:if="${payment == null}">Chưa có thông tin thanh toán.</p>
@@ -38,10 +38,13 @@
   </thead>
   <tbody>
     <tr th:each="item : ${order.orderItems}">
-      <td th:text="${item.productName}"></td>
-      <td th:text="${item.unitPrice}"></td>
+      <td th:text="${item.product.name}"></td>
+      <td th:text="${item.price}"></td>
       <td th:text="${item.quantity}"></td>
-      <td th:text="${item.unitPrice * item.quantity}"></td>
+      <td th:text="${item.price * item.quantity}"></td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(order.items)}">
+      <td colspan="4">Đơn hàng không có sản phẩm.</td>
     </tr>
   </tbody>
 </table>

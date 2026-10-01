@@ -2,6 +2,7 @@ package com.example.ecommerce.service;
 
 import com.example.ecommerce.entity.Category;
 import com.example.ecommerce.entity.Product;
+import com.example.ecommerce.entity.ProductSpec;
 import com.example.ecommerce.repository.CategoryRepository;
 import com.example.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -96,7 +97,12 @@ public class ProductService {
             BigDecimal price,
             Integer stock,
             Long categoryId,
-            MultipartFile image
+            MultipartFile image,
+            String ram,
+            String storage,
+            String color,
+            String screenSize,
+            String battery
     ) {
         if (name == null || name.trim().isEmpty()) {
             return null;
@@ -142,7 +148,19 @@ public class ProductService {
                 .status(true)
                 .build();
 
+        ProductSpec productSpec = new ProductSpec();
+
+        productSpec.setProduct(product);
+        productSpec.setRam(ram);
+        productSpec.setStorage(storage);
+        productSpec.setColor(color);
+        productSpec.setScreenSize(screenSize);
+        productSpec.setBattery(battery);
+
+        product.setProductSpec(productSpec);
+
         return productRepository.save(product);
+
     }
 
     @Transactional
@@ -153,7 +171,12 @@ public class ProductService {
             BigDecimal price,
             Integer stock,
             Long categoryId,
-            MultipartFile image
+            MultipartFile image,
+            String ram,
+            String storage,
+            String color,
+            String screenSize,
+            String battery
     ) {
         Product product = productRepository
                 .findById(productId)
@@ -188,6 +211,21 @@ public class ProductService {
         product.setPrice(price);
         product.setStock(stock);
         product.setCategory(category);
+
+        ProductSpec productSpec = product.getProductSpec();
+
+        if (productSpec == null) {
+            productSpec = new ProductSpec();
+            productSpec.setProduct(product);
+            product.setProductSpec(productSpec);
+        }
+
+        productSpec.setRam(ram);
+        productSpec.setStorage(storage);
+        productSpec.setColor(color);
+        productSpec.setScreenSize(screenSize);
+        productSpec.setBattery(battery);
+
 
         if (image != null && !image.isEmpty()) {
             try {
