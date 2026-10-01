@@ -114,7 +114,11 @@
                 <span th:if="${rev.rating < 5}" th:each="star : ${#numbers.sequence(rev.rating + 1, 5)}">☆</span>
                 <span class="text-dark small ms-1" th:text="'(' + ${rev.rating} + '/5 sao)'"></span>
             </div>
-            <p class="mb-0 text-secondary" th:text="${rev.comment}">Nội dung đánh giá</p>
+            <p class="mb-0 text-secondary review-comment"
+               th:text="${rev.comment}">
+                Nội dung đánh giá
+            </p>
+
         </div>
 
         <!-- Phân trang đánh giá -->
@@ -138,7 +142,16 @@
     <div class="alert alert-warning">Không tìm thấy sản phẩm.</div>
     <a th:href="@{/products}" class="btn btn-primary">Quay lại danh sách sản phẩm</a>
 </div>
+<style>
+    .review-comment {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        max-width: 100%;
+    }
+</style>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>
+

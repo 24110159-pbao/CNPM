@@ -1,65 +1,745 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Dashboard - Manager</title></head>
-<body>
-<h1>Dashboard</h1>
-<nav>
-  <a th:href="@{/}">← Trang chủ</a> |
-  <a href="/manager/products">Sản phẩm</a> |
-  <a href="/manager/categories">Danh mục</a> |
-  <a href="/manager/orders">Đơn hàng</a> |
-  <a href="/manager/discounts">Mã giảm giá</a> |
-  <a href="/manager/reviews">Đánh giá</a> |
-  <a href="/manager/users">Người dùng</a> |
-  <a href="/manager/revenue">Doanh thu</a>
-</nav>
-<hr>
-<h2>Tổng quan</h2>
-<table border="1" cellpadding="8">
-  <tr>
-    <td>Tổng người dùng</td>
-    <td th:text="${totalUsers}">0</td>
-  </tr>
-  <tr>
-    <td>Tổng sản phẩm</td>
-    <td th:text="${totalProducts}">0</td>
-  </tr>
-  <tr>
-    <td>Tổng đơn hàng</td>
-    <td th:text="${totalOrders}">0</td>
-  </tr>
-  <tr>
-    <td>Doanh thu (DELIVERED)</td>
-    <td th:text="${revenue}">0</td>
-  </tr>
-</table>
+<!DOCTYPE html> <html xmlns:th="http://www.thymeleaf.org"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Manager</title>
 
-<h2>Đơn hàng theo trạng thái</h2>
-<table border="1" cellpadding="8">
-  <tr>
-    <th>Trạng thái</th><th>Số lượng</th>
-  </tr>
-  <tr>
-    <td>PENDING</td><td th:text="${orderCount_PENDING}">0</td>
-  </tr>
-  <tr>
-    <td>CONFIRMED</td><td th:text="${orderCount_CONFIRMED}">0</td>
-  </tr>
-  <tr>
-    <td>SHIPPING</td><td th:text="${orderCount_SHIPPING}">0</td>
-  </tr>
-  <tr>
-    <td>DELIVERED</td><td th:text="${orderCount_DELIVERED}">0</td>
-  </tr>
-  <tr>
-    <td>CANCELLED</td><td th:text="${orderCount_CANCELLED}">0</td>
-  </tr>
-  <tr>
-    <td>RETURN_REQUESTED</td><td th:text="${orderCount_RETURN_REQUESTED}">0</td>
-  </tr>
-  <tr>
-    <td>REFUNDED</td><td th:text="${orderCount_REFUNDED}">0</td>
-  </tr>
-</table>
-</body>
-</html>
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f4f7fb;
+        color: #334155;
+    }
+
+    .layout {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* ================= SIDEBAR ================= */
+
+    .sidebar {
+        width: 250px;
+        background: linear-gradient(180deg, #312e81, #4f46e5);
+        color: white;
+        padding: 25px 16px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        overflow-y: auto;
+    }
+
+    .brand {
+        padding: 5px 14px 28px;
+        border-bottom: 1px solid rgba(255, 255, 255, .15);
+        margin-bottom: 20px;
+    }
+
+    .brand h2 {
+        font-size: 22px;
+        margin-bottom: 5px;
+    }
+
+    .brand p {
+        color: #c7d2fe;
+        font-size: 12px;
+    }
+
+    .menu-title {
+        color: #a5b4fc;
+        font-size: 11px;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 0 14px;
+        margin-bottom: 8px;
+    }
+
+    .menu {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .menu a {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        color: #e0e7ff;
+        text-decoration: none;
+        padding: 11px 14px;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: .2s;
+    }
+
+    .menu a:hover {
+        background: rgba(255, 255, 255, .13);
+        color: white;
+        transform: translateX(2px);
+    }
+
+    .menu a.active {
+        background: rgba(255, 255, 255, .18);
+        color: white;
+        font-weight: 600;
+    }
+
+    .home-link {
+        margin-top: 8px;
+    }
+
+    .home-link a {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        color: #e0e7ff;
+        text-decoration: none;
+        padding: 11px 14px;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: .2s;
+    }
+
+    .home-link a:hover {
+        background: rgba(255, 255, 255, .13);
+        color: white;
+        transform: translateX(2px);
+    }
+
+    .home-link a:active {
+        transform: translateX(1px);
+        background: rgba(255, 255, 255, .18);
+    }
+
+
+    /* ================= MAIN ================= */
+
+    .main {
+        margin-left: 250px;
+        width: calc(100% - 250px);
+        padding: 35px;
+    }
+
+    /* Header */
+
+    .page-header {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        border-radius: 18px;
+        padding: 30px 35px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 25px rgba(79, 70, 229, .18);
+    }
+
+    .page-header h1 {
+        font-size: 30px;
+        margin-bottom: 7px;
+    }
+
+    .page-header p {
+        color: #e0e7ff;
+        font-size: 14px;
+    }
+
+    /* ================= SECTION ================= */
+
+    .section-title {
+        color: #1e293b;
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    /* ================= STAT CARDS ================= */
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 15px;
+        padding: 22px;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, .05);
+        position: relative;
+        overflow: hidden;
+        transition: .2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(15, 23, 42, .09);
+    }
+
+    .stat-card::after {
+        content: "";
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        right: -30px;
+        top: -30px;
+        opacity: .08;
+    }
+
+    .stat-card.users::after {
+        background: #4f46e5;
+    }
+
+    .stat-card.products::after {
+        background: #0891b2;
+    }
+
+    .stat-card.orders::after {
+        background: #f59e0b;
+    }
+
+    .stat-card.revenue::after {
+        background: #10b981;
+    }
+
+    .stat-icon {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 11px;
+        margin-bottom: 16px;
+        font-size: 21px;
+    }
+
+    .users .stat-icon {
+        background: #eef2ff;
+    }
+
+    .products .stat-icon {
+        background: #ecfeff;
+    }
+
+    .orders .stat-icon {
+        background: #fffbeb;
+    }
+
+    .revenue .stat-icon {
+        background: #ecfdf5;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 13px;
+        margin-bottom: 7px;
+    }
+
+    .stat-value {
+        color: #1e293b;
+        font-size: 27px;
+        font-weight: 750;
+    }
+
+    .revenue .stat-value {
+        color: #059669;
+    }
+
+    /* ================= ORDER STATUS ================= */
+
+    .status-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, .05);
+    }
+
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+    }
+
+    .status-item {
+        border: 1px solid #e5e7eb;
+        border-radius: 11px;
+        padding: 17px;
+        background: #fafafa;
+        transition: .2s;
+    }
+
+    .status-item:hover {
+        background: #f8fafc;
+        border-color: #c7d2fe;
+    }
+
+    .status-name {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        word-break: break-word;
+    }
+
+    .status-count {
+        color: #1e293b;
+        font-size: 25px;
+        font-weight: 750;
+    }
+
+    /* Status colors */
+
+    .status-item.pending {
+        border-left: 4px solid #f59e0b;
+    }
+
+    .status-item.confirmed {
+        border-left: 4px solid #3b82f6;
+    }
+
+    .status-item.shipping {
+        border-left: 4px solid #8b5cf6;
+    }
+
+    .status-item.delivered {
+        border-left: 4px solid #10b981;
+    }
+
+    .status-item.cancelled {
+        border-left: 4px solid #ef4444;
+    }
+
+    .status-item.returned {
+        border-left: 4px solid #f97316;
+    }
+
+    .status-item.refunded {
+        border-left: 4px solid #64748b;
+    }
+
+    /* ================= QUICK LINKS ================= */
+
+    .quick-section {
+        margin-top: 30px;
+    }
+
+    .quick-links {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+    }
+
+    .quick-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 11px;
+        color: #334155;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        transition: .2s;
+    }
+
+    .quick-link:hover {
+        color: #4f46e5;
+        border-color: #c7d2fe;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(15, 23, 42, .06);
+    }
+
+    .quick-icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eef2ff;
+        border-radius: 8px;
+    }
+
+    /* ================= RESPONSIVE ================= */
+
+    @media (max-width: 1100px) {
+        .stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .status-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .quick-links {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 800px) {
+        .sidebar {
+            position: relative;
+            width: 100%;
+            height: auto;
+        }
+
+        .layout {
+            display: block;
+        }
+
+        .main {
+            margin-left: 0;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+
+        .status-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 550px) {
+        .stats,
+        .status-grid,
+        .quick-links {
+            grid-template-columns: 1fr;
+        }
+
+        .menu {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header {
+            padding: 23px;
+        }
+
+        .page-header h1 {
+            font-size: 25px;
+        }
+    }
+  </style>
+
+</head> <body> <div class="layout">
+  <!-- ================= SIDEBAR ================= -->
+
+  <aside class="sidebar">
+
+    <div class="brand">
+      <h2>🛠 Manager</h2>
+      <p>Trang quản trị hệ thống</p>
+    </div>
+
+    <div class="menu-title">
+      Tổng quan
+    </div>
+
+    <nav class="menu">
+
+      <a href="/manager/dashboard"
+         class="active">
+        📊
+        <span>Dashboard</span>
+      </a>
+
+      <a href="/manager/products">
+        📦
+        <span>Sản phẩm</span>
+      </a>
+
+      <a href="/manager/categories">
+        🗂️
+        <span>Danh mục</span>
+      </a>
+
+      <a href="/manager/orders">
+        🛒
+        <span>Đơn hàng</span>
+      </a>
+
+      <a href="/manager/discounts">
+        🎟️
+        <span>Mã giảm giá</span>
+      </a>
+
+      <a href="/manager/reviews">
+        ⭐
+        <span>Đánh giá</span>
+      </a>
+
+      <a href="/manager/users">
+        👥
+        <span>Người dùng</span>
+      </a>
+
+      <a href="/manager/revenue">
+        💰
+        <span>Doanh thu</span>
+      </a>
+
+    </nav>
+
+    <div class="home-link">
+      <a href="/">
+        <span class="menu-icon">🏠</span>
+        <span>Về trang chủ</span>
+      </a>
+
+    </div>
+
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+
+  <main class="main">
+
+    <div class="page-header">
+
+      <h1>📊 Dashboard</h1>
+
+      <p>
+        Tổng quan tình hình hoạt động của hệ thống
+      </p>
+
+    </div>
+
+    <!-- ================= OVERVIEW ================= -->
+
+    <h2 class="section-title">
+      Tổng quan
+    </h2>
+
+    <div class="stats">
+
+      <!-- Users -->
+      <div class="stat-card users">
+
+        <div class="stat-icon">
+          👥
+        </div>
+
+        <div class="stat-label">
+          Tổng người dùng
+        </div>
+
+        <div class="stat-value"
+             th:text="${totalUsers}">
+          0
+        </div>
+
+      </div>
+
+      <!-- Products -->
+      <div class="stat-card products">
+
+        <div class="stat-icon">
+          📦
+        </div>
+
+        <div class="stat-label">
+          Tổng sản phẩm
+        </div>
+
+        <div class="stat-value"
+             th:text="${totalProducts}">
+          0
+        </div>
+
+      </div>
+
+      <!-- Orders -->
+      <div class="stat-card orders">
+
+        <div class="stat-icon">
+          🛒
+        </div>
+
+        <div class="stat-label">
+          Tổng đơn hàng
+        </div>
+
+        <div class="stat-value"
+             th:text="${totalOrders}">
+          0
+        </div>
+
+      </div>
+
+      <!-- Revenue -->
+      <div class="stat-card revenue">
+
+        <div class="stat-icon">
+          💰
+        </div>
+
+        <div class="stat-label">
+          Doanh thu (DELIVERED)
+        </div>
+
+        <div class="stat-value"
+             th:text="${revenue}">
+          0
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ================= ORDER STATUS ================= -->
+
+    <div class="status-card">
+
+      <h2 class="section-title">
+        📋 Đơn hàng theo trạng thái
+      </h2>
+
+      <div class="status-grid">
+
+        <div class="status-item pending">
+
+          <div class="status-name">
+            PENDING
+          </div>
+
+          <div class="status-count"
+               th:text="${orderCount_PENDING}">
+            0
+          </div>
+
+        </div>
+
+        <div class="status-item confirmed">
+
+          <div class="status-name">
+            CONFIRMED
+          </div>
+
+          <div class="status-count"
+               th:text="${orderCount_CONFIRMED}">
+            0
+          </div>
+
+        </div>
+
+        <div class="status-item shipping">
+
+          <div class="status-name">
+            SHIPPING
+          </div>
+
+          <div class="status-count"
+               th:text="${orderCount_SHIPPING}">
+            0
+          </div>
+
+        </div>
+
+        <div class="status-item delivered">
+
+          <div class="status-name">
+            DELIVERED
+          </div>
+
+          <div class="status-count"
+               th:text="${orderCount_DELIVERED}">
+            0
+          </div>
+
+        </div>
+
+        <div class="status-item cancelled">
+
+          <div class="status-name">
+            CANCELLED
+          </div>
+
+          <div class="status-count"
+               th:text="${orderCount_CANCELLED}">
+            0
+          </div>
+
+        </div>
+
+        <div class="status-item returned">
+
+          <div class="status-name">
+            RETURN REQUESTED
+          </div>
+
+          <div class="status-count"
+               th:text="${orderCount_RETURN_REQUESTED}">
+            0
+          </div>
+
+        </div>
+
+        <div class="status-item refunded">
+
+          <div class="status-name">
+            REFUNDED
+          </div>
+
+          <div class="status-count"
+               th:text="${orderCount_REFUNDED}">
+            0
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ================= QUICK ACCESS ================= -->
+
+    <div class="quick-section">
+
+      <h2 class="section-title">
+        ⚡ Truy cập nhanh
+      </h2>
+
+      <div class="quick-links">
+
+        <a href="/manager/products"
+           class="quick-link">
+          <span class="quick-icon">📦</span>
+          <span>Quản lý sản phẩm</span>
+        </a>
+
+        <a href="/manager/orders"
+           class="quick-link">
+          <span class="quick-icon">🛒</span>
+          <span>Quản lý đơn hàng</span>
+        </a>
+
+        <a href="/manager/users"
+           class="quick-link">
+          <span class="quick-icon">👥</span>
+          <span>Quản lý người dùng</span>
+        </a>
+
+        <a href="/manager/revenue"
+           class="quick-link">
+          <span class="quick-icon">💰</span>
+          <span>Xem báo cáo doanh thu</span>
+        </a>
+
+      </div>
+
+    </div>
+
+  </main>
+
+</div> </body> </html>

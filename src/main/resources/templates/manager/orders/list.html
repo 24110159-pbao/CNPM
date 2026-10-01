@@ -1,65 +1,584 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Đơn hàng - Manager</title></head>
-<body>
-<h1>Quản lý Đơn hàng</h1>
-<a href="/manager/dashboard">Dashboard</a>
-<hr>
-<div th:if="${success}" style="color:green" th:text="${success}"></div>
+<!DOCTYPE html> <html xmlns:th="http://www.thymeleaf.org"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Đơn hàng - Manager</title>
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-<form method="get" action="/manager/orders">
-  <label>Trạng thái:</label>
-  <select name="status">
-    <option value="">-- Tất cả --</option>
-    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
-            th:selected="${s == selectedStatus}"></option>
-  </select>
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f4f7fb;
+        color: #334155;
+        min-height: 100vh;
+    }
 
-  <label>Từ ngày:</label>
-  <input type="date" name="startDate" th:value="${startDate}">
+    .container {
+        width: 94%;
+        max-width: 1250px;
+        margin: 40px auto;
+    }
 
-  <label>Đến ngày:</label>
-  <input type="date" name="endDate" th:value="${endDate}">
+    /* Header */
+    .header {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        padding: 28px 35px;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.2);
+        margin-bottom: 20px;
+    }
 
-  <button type="submit">Lọc</button>
+    .header h1 {
+        font-size: 29px;
+        margin-bottom: 7px;
+    }
 
-  <a th:if="${selectedStatus != null or startDate != null}" href="/manager/orders">Xóa bộ lọc</a>
-</form>
+    .header p {
+        color: #e0e7ff;
+        font-size: 14px;
+    }
 
-<p>
-  <span th:if="${selectedStatus != null}">Trạng thái: <b th:text="${selectedStatus}"></b> &nbsp;</span>
-  <span th:if="${startDate != null}">Từ: <b th:text="${startDate}"></b> &nbsp;</span>
-  <span th:if="${endDate != null}">Đến: <b th:text="${endDate}"></b></span>
-</p>
+    /* Navigation */
+    .navigation {
+        margin-bottom: 20px;
+    }
 
-<table border="1" cellpadding="8">
-  <thead>
-    <tr>
-      <th>ID</th><th>Khách hàng</th><th>Tổng tiền</th><th>Thanh toán</th><th>Trạng thái</th><th>Ngày đặt</th><th>Chi tiết</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr th:each="o : ${orders.content}">
-      <td th:text="${o.id}"></td>
-      <td th:text="${o.user?.email}"></td>
-      <td th:text="${o.finalAmount}"></td>
-      <td th:text="${o.payment?.method}"></td>
-      <td th:text="${o.status}"></td>
-      <td th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
-      <td><a th:href="@{/manager/orders/{id}(id=${o.id})}">Xem</a></td>
-    </tr>
-    <tr th:if="${orders.empty}">
-      <td colspan="7">Không có đơn hàng phù hợp.</td>
-    </tr>
-  </tbody>
-</table>
+    .dashboard-btn {
+        display: inline-block;
+        text-decoration: none;
+        padding: 10px 17px;
+        border-radius: 8px;
+        background: white;
+        color: #4f46e5;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
 
-<div th:if="${orders.totalPages > 1}">
-  <span th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}">
-    <a th:href="@{/manager/orders(page=${i}, status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}"
-       th:text="${i + 1}"
-       th:style="${i == orders.number} ? 'font-weight:bold' : ''"></a>
-  </span>
-</div>
-</body>
-</html>
+    .dashboard-btn:hover {
+        background: #4f46e5;
+        color: white;
+    }
+
+    /* Alert */
+    .alert-success {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+        padding: 13px 17px;
+        border-radius: 9px;
+        margin-bottom: 18px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Filter */
+    .filter-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 22px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, 0.05);
+    }
+
+    .filter-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 17px;
+    }
+
+    .filter-form {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr 1fr auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .form-group label {
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .filter-form select,
+    .filter-form input {
+        width: 100%;
+        height: 42px;
+        padding: 0 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: white;
+        color: #374151;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .filter-form select:focus,
+    .filter-form input:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    .filter-btn {
+        height: 42px;
+        padding: 0 20px;
+        border: none;
+        border-radius: 8px;
+        background: #4f46e5;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .filter-btn:hover {
+        background: #4338ca;
+    }
+
+    .clear-filter {
+        display: inline-block;
+        margin-top: 14px;
+        color: #dc2626;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .clear-filter:hover {
+        text-decoration: underline;
+    }
+
+    /* Active filters */
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 17px;
+        padding-top: 17px;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .filter-badge {
+        background: #eef2ff;
+        color: #4f46e5;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* Table */
+    .table-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, 0.06);
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .table-header h2 {
+        font-size: 20px;
+        color: #1e293b;
+    }
+
+    .order-count {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        min-width: 900px;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background: #f8fafc;
+    }
+
+    th {
+        text-align: left;
+        padding: 14px;
+        color: #64748b;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 15px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    tbody tr {
+        transition: 0.2s;
+    }
+
+    tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .order-id {
+        color: #4f46e5;
+        font-weight: 700;
+    }
+
+    .customer {
+        color: #475569;
+    }
+
+    .amount {
+        color: #dc2626;
+        font-weight: 700;
+    }
+
+    .payment {
+        display: inline-block;
+        background: #eff6ff;
+        color: #2563eb;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 20px;
+        background: #eef2ff;
+        color: #4f46e5;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .date {
+        color: #64748b;
+        white-space: nowrap;
+        font-size: 13px;
+    }
+
+    .view-btn {
+        display: inline-block;
+        padding: 7px 12px;
+        background: #eef2ff;
+        color: #4f46e5;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .view-btn:hover {
+        background: #4f46e5;
+        color: white;
+    }
+
+    .empty {
+        text-align: center;
+        padding: 45px !important;
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 7px;
+        margin-top: 25px;
+    }
+
+    .page-link {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        background: white;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        border-radius: 7px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .page-link:hover {
+        background: #eef2ff;
+        color: #4f46e5;
+    }
+
+    .page-link.active {
+        background: #4f46e5;
+        color: white;
+        border-color: #4f46e5;
+    }
+
+    @media (max-width: 850px) {
+        .container {
+            width: 94%;
+            margin: 20px auto;
+        }
+
+        .header {
+            padding: 22px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .filter-form {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-btn {
+            width: 100%;
+        }
+
+        .table-card {
+            padding: 18px;
+        }
+
+        .table-header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 6px;
+        }
+    }
+  </style>
+
+</head> <body> <div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Quản lý Đơn hàng</h1>
+    <p>Theo dõi, lọc và quản lý các đơn hàng của hệ thống</p>
+  </div>
+
+  <!-- Navigation -->
+  <div class="navigation">
+    <a href="/manager/dashboard" class="dashboard-btn">
+      ← Dashboard
+    </a>
+  </div>
+
+  <!-- Success -->
+  <div th:if="${success}"
+       class="alert-success"
+       th:text="${success}">
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-card">
+
+    <div class="filter-title">
+      🔎 Bộ lọc đơn hàng
+    </div>
+
+    <form method="get"
+          action="/manager/orders"
+          class="filter-form">
+
+      <div class="form-group">
+        <label>Trạng thái</label>
+
+        <select name="status">
+          <option value="">-- Tất cả --</option>
+
+          <option th:each="s : ${statuses}"
+                  th:value="${s}"
+                  th:text="${s}"
+                  th:selected="${s == selectedStatus}">
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Từ ngày</label>
+
+        <input type="date"
+               name="startDate"
+               th:value="${startDate}">
+      </div>
+
+      <div class="form-group">
+        <label>Đến ngày</label>
+
+        <input type="date"
+               name="endDate"
+               th:value="${endDate}">
+      </div>
+
+      <button type="submit" class="filter-btn">
+        🔎 Lọc
+      </button>
+
+    </form>
+
+    <a th:if="${selectedStatus != null or startDate != null}"
+       href="/manager/orders"
+       class="clear-filter">
+      ✕ Xóa bộ lọc
+    </a>
+
+    <!-- Active filters -->
+    <div class="active-filters"
+         th:if="${selectedStatus != null or startDate != null or endDate != null}">
+
+        <span class="filter-badge"
+              th:if="${selectedStatus != null}"
+              th:text="'Trạng thái: ' + ${selectedStatus}">
+        </span>
+
+      <span class="filter-badge"
+            th:if="${startDate != null}"
+            th:text="'Từ: ' + ${startDate}">
+        </span>
+
+      <span class="filter-badge"
+            th:if="${endDate != null}"
+            th:text="'Đến: ' + ${endDate}">
+        </span>
+
+    </div>
+
+  </div>
+
+  <!-- Orders -->
+  <div class="table-card">
+
+    <div class="table-header">
+
+      <h2>📦 Danh sách đơn hàng</h2>
+
+      <span class="order-count"
+            th:text="'Tổng: ' + ${orders.totalElements} + ' đơn hàng'">
+            Tổng đơn hàng
+        </span>
+
+    </div>
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Khách hàng</th>
+          <th>Tổng tiền</th>
+          <th>Thanh toán</th>
+          <th>Trạng thái</th>
+          <th>Ngày đặt</th>
+          <th>Chi tiết</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        <tr th:each="o : ${orders.content}">
+
+          <td class="order-id"
+              th:text="'#' + ${o.id}">
+          </td>
+
+          <td class="customer"
+              th:text="${o.user?.email}">
+          </td>
+
+          <td class="amount"
+              th:text="${o.finalAmount}">
+          </td>
+
+          <td>
+                    <span class="payment"
+                          th:text="${o.payment?.method != null ? o.payment.method : '-'}">
+                    </span>
+          </td>
+
+          <td>
+                    <span class="status"
+                          th:text="${o.status}">
+                    </span>
+          </td>
+
+          <td class="date"
+              th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">
+          </td>
+
+          <td>
+            <a th:href="@{/manager/orders/{id}(id=${o.id})}"
+               class="view-btn">
+              👁 Xem
+            </a>
+          </td>
+
+        </tr>
+
+        <tr th:if="${orders.empty}">
+          <td colspan="7" class="empty">
+            📭 Không có đơn hàng phù hợp.
+          </td>
+        </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination"
+         th:if="${orders.totalPages > 1}">
+
+        <span th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}">
+
+            <a th:href="@{/manager/orders(page=${i}, status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}"
+               class="page-link"
+               th:classappend="${i == orders.number} ? 'active' : ''"
+               th:text="${i + 1}">
+                1
+            </a>
+
+        </span>
+
+    </div>
+
+  </div>
+
+</div> </body> </html>

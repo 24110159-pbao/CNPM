@@ -1,48 +1,476 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Mã giảm giá - Manager</title></head>
-<body>
-<h1>Quản lý Mã giảm giá</h1>
-<a href="/manager/dashboard">Dashboard</a> |
-<a href="/manager/discounts/create">+ Thêm mã</a>
-<hr>
-<div th:if="${success}" style="color:green" th:text="${success}"></div>
-<div th:if="${error}" style="color:red" th:text="${error}"></div>
+<!DOCTYPE html> <html xmlns:th="http://www.thymeleaf.org"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Mã giảm giá - Manager</title>
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-<table border="1" cellpadding="8">
-  <thead>
-    <tr>
-      <th>ID</th><th>Mã</th><th>Giảm (%)</th><th>Số lượng</th>
-      <th>Bắt đầu</th><th>Kết thúc</th><th>Hành động</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr th:each="d : ${discounts.content}">
-      <td th:text="${d.id}"></td>
-      <td th:text="${d.code}"></td>
-      <td th:text="${d.discountValue}"></td>
-      <td th:text="${d.quantity}"></td>
-      <td th:text="${#temporals.format(d.startAt, 'dd/MM/yyyy HH:mm')}"></td>
-      <td th:text="${#temporals.format(d.endAt, 'dd/MM/yyyy HH:mm')}"></td>
-      <td>
-        <a th:href="@{/manager/discounts/{id}/edit(id=${d.id})}">Sửa</a>
-        <form th:action="@{/manager/discounts/{id}/delete(id=${d.id})}" method="post" style="display:inline"
-              onsubmit="return confirm('Xóa mã này?')">
-          <button type="submit">Xóa</button>
-        </form>
-      </td>
-    </tr>
-    <tr th:if="${discounts.empty}">
-      <td colspan="7">Chưa có mã giảm giá.</td>
-    </tr>
-  </tbody>
-</table>
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f4f7fb;
+        color: #333;
+        min-height: 100vh;
+    }
 
-<div th:if="${discounts.totalPages > 1}">
-  <span th:each="i : ${#numbers.sequence(0, discounts.totalPages - 1)}">
-    <a th:href="@{/manager/discounts(page=${i})}" th:text="${i + 1}"
-       th:style="${i == discounts.number} ? 'font-weight:bold' : ''"></a>
-  </span>
-</div>
-</body>
-</html>
+    .container {
+        width: 94%;
+        max-width: 1250px;
+        margin: 40px auto;
+    }
+
+    /* Header */
+    .header {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        padding: 28px 35px;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.2);
+        margin-bottom: 20px;
+    }
+
+    .header h1 {
+        font-size: 29px;
+        margin-bottom: 7px;
+    }
+
+    .header p {
+        color: #e0e7ff;
+        font-size: 14px;
+    }
+
+    /* Navigation */
+    .navigation {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .nav-btn {
+        display: inline-block;
+        text-decoration: none;
+        padding: 10px 17px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .dashboard-btn {
+        color: #4f46e5;
+        background: white;
+        border: 1px solid #e5e7eb;
+    }
+
+    .dashboard-btn:hover {
+        background: #4f46e5;
+        color: white;
+    }
+
+    .add-btn {
+        background: #10b981;
+        color: white;
+    }
+
+    .add-btn:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    /* Alert */
+    .alert {
+        padding: 13px 17px;
+        border-radius: 9px;
+        margin-bottom: 18px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .alert-success {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+
+    .alert-error {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    /* Table Card */
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, 0.06);
+        border: 1px solid #e5e7eb;
+    }
+
+    .table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .table-header h2 {
+        font-size: 20px;
+        color: #1f2937;
+    }
+
+    .table-count {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    /* Table */
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+    }
+
+    thead {
+        background: #f8fafc;
+    }
+
+    th {
+        text-align: left;
+        padding: 14px 15px;
+        color: #64748b;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 15px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+        font-size: 14px;
+    }
+
+    tbody tr {
+        transition: background 0.2s;
+    }
+
+    tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .id {
+        color: #6366f1;
+        font-weight: 700;
+    }
+
+    /* Coupon code */
+    .coupon-code {
+        display: inline-block;
+        background: #eef2ff;
+        color: #4f46e5;
+        border: 1px dashed #a5b4fc;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        font-size: 13px;
+    }
+
+    /* Discount */
+    .discount-badge {
+        display: inline-block;
+        background: #fff7ed;
+        color: #ea580c;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    /* Quantity */
+    .quantity {
+        color: #475569;
+        font-weight: 600;
+    }
+
+    /* Date */
+    .date {
+        color: #64748b;
+        white-space: nowrap;
+        font-size: 13px;
+    }
+
+    /* Actions */
+    .actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .edit-btn,
+    .delete-btn {
+        border-radius: 7px;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+        transition: 0.2s;
+    }
+
+    .edit-btn {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .edit-btn:hover {
+        background: #2563eb;
+        color: white;
+    }
+
+    .delete-btn {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .delete-btn:hover {
+        background: #dc2626;
+        color: white;
+    }
+
+    /* Empty */
+    .empty {
+        text-align: center;
+        padding: 45px !important;
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 7px;
+        margin-top: 25px;
+    }
+
+    .page-link {
+        min-width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #64748b;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 7px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .page-link:hover {
+        background: #eef2ff;
+        color: #4f46e5;
+        border-color: #c7d2fe;
+    }
+
+    .page-link.active {
+        background: #4f46e5;
+        color: white;
+        border-color: #4f46e5;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            width: 94%;
+            margin: 20px auto;
+        }
+
+        .header {
+            padding: 22px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .table-card {
+            padding: 18px;
+        }
+
+        .table-header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 5px;
+        }
+    }
+  </style>
+
+</head> <body> <div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Quản lý Mã giảm giá</h1>
+    <p>Tạo, chỉnh sửa và quản lý các mã giảm giá của hệ thống</p>
+  </div>
+
+  <!-- Navigation -->
+  <div class="navigation">
+
+    <a href="/manager/dashboard"
+       class="nav-btn dashboard-btn">
+      ← Dashboard
+    </a>
+
+    <a href="/manager/discounts/create"
+       class="nav-btn add-btn">
+      + Thêm mã giảm giá
+    </a>
+
+  </div>
+
+  <!-- Messages -->
+  <div th:if="${success}"
+       class="alert alert-success"
+       th:text="${success}">
+  </div>
+
+  <div th:if="${error}"
+       class="alert alert-error"
+       th:text="${error}">
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+
+    <div class="table-header">
+      <h2>🎟️ Danh sách mã giảm giá</h2>
+
+      <span class="table-count"
+            th:text="'Tổng: ' + ${discounts.totalElements} + ' mã'">
+            Tổng mã
+        </span>
+    </div>
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Mã</th>
+          <th>Giảm giá</th>
+          <th>Số lượng</th>
+          <th>Bắt đầu</th>
+          <th>Kết thúc</th>
+          <th>Hành động</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        <tr th:each="d : ${discounts.content}">
+
+          <td class="id"
+              th:text="${d.id}">
+          </td>
+
+          <td>
+                    <span class="coupon-code"
+                          th:text="${d.code}">
+                    </span>
+          </td>
+
+          <td>
+                    <span class="discount-badge"
+                          th:text="${d.discountValue + '%'}">
+                    </span>
+          </td>
+
+          <td class="quantity"
+              th:text="${d.quantity}">
+          </td>
+
+          <td class="date"
+              th:text="${#temporals.format(d.startAt, 'dd/MM/yyyy HH:mm')}">
+          </td>
+
+          <td class="date"
+              th:text="${#temporals.format(d.endAt, 'dd/MM/yyyy HH:mm')}">
+          </td>
+
+          <td>
+
+            <div class="actions">
+
+              <a th:href="@{/manager/discounts/{id}/edit(id=${d.id})}"
+                 class="edit-btn">
+                ✏ Sửa
+              </a>
+
+              <form th:action="@{/manager/discounts/{id}/delete(id=${d.id})}"
+                    method="post"
+                    onsubmit="return confirm('Xóa mã này?')">
+
+                <button type="submit"
+                        class="delete-btn">
+                  🗑 Xóa
+                </button>
+
+              </form>
+
+            </div>
+
+          </td>
+
+        </tr>
+
+        <tr th:if="${discounts.empty}">
+          <td colspan="7" class="empty">
+            🎟️ Chưa có mã giảm giá nào.
+          </td>
+        </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination"
+         th:if="${discounts.totalPages > 1}">
+
+        <span th:each="i : ${#numbers.sequence(0, discounts.totalPages - 1)}">
+
+            <a th:href="@{/manager/discounts(page=${i})}"
+               class="page-link"
+               th:classappend="${i == discounts.number} ? 'active' : ''"
+               th:text="${i + 1}">
+                1
+            </a>
+
+        </span>
+
+    </div>
+
+  </div>
+
+</div> </body> </html>

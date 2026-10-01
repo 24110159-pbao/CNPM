@@ -1,53 +1,534 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Sản phẩm - Manager</title></head>
-<body>
-<h1>Quản lý Sản phẩm</h1>
-<nav>
-  <a href="/manager/dashboard">Dashboard</a> |
-  <a href="/manager/products/create">+ Thêm sản phẩm</a>
-</nav>
-<hr>
-<div th:if="${success}" style="color:green" th:text="${success}"></div>
-<div th:if="${error}" style="color:red" th:text="${error}"></div>
+<!DOCTYPE html> <html xmlns:th="http://www.thymeleaf.org"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Sản phẩm - Manager</title>
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-<table border="1" cellpadding="8">
-  <thead>
-    <tr>
-      <th>ID</th><th>Tên</th><th>Danh mục</th><th>Giá</th><th>Tồn kho</th><th>Trạng thái</th><th>Hành động</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr th:each="p : ${products.content}">
-      <td th:text="${p.id}"></td>
-      <td th:text="${p.name}"></td>
-      <td th:text="${p.category?.name}"></td>
-      <td th:text="${p.price}"></td>
-      <td th:text="${p.stock}"></td>
-      <td th:text="${p.status} ? 'Hoạt động' : 'Ẩn'"></td>
-      <td>
-        <a th:href="@{/manager/products/{id}/edit(id=${p.id})}">Sửa</a>
-        <form th:action="@{/manager/products/{id}/toggle-status(id=${p.id})}" method="post" style="display:inline">
-          <input type="hidden" name="status" th:value="${!p.status}">
-          <button type="submit" th:text="${p.status} ? 'Ẩn' : 'Hiện'"></button>
-        </form>
-        <form th:action="@{/manager/products/{id}/delete(id=${p.id})}" method="post" style="display:inline"
-              onsubmit="return confirm('Xóa sản phẩm này?')">
-          <button type="submit">Xóa</button>
-        </form>
-      </td>
-    </tr>
-    <tr th:if="${products.empty}">
-      <td colspan="7">Chưa có sản phẩm.</td>
-    </tr>
-  </tbody>
-</table>
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f4f7fb;
+        color: #334155;
+        min-height: 100vh;
+    }
 
-<div th:if="${products.totalPages > 1}">
-  <span th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}">
-    <a th:href="@{/manager/products(page=${i})}" th:text="${i + 1}"
-       th:style="${i == products.number} ? 'font-weight:bold' : ''"></a>
-  </span>
-</div>
-</body>
-</html>
+    .container {
+        width: 94%;
+        max-width: 1250px;
+        margin: 40px auto;
+    }
+
+    /* Header */
+    .header {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        padding: 28px 35px;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.2);
+        margin-bottom: 20px;
+    }
+
+    .header h1 {
+        font-size: 29px;
+        margin-bottom: 7px;
+    }
+
+    .header p {
+        color: #e0e7ff;
+        font-size: 14px;
+    }
+
+    /* Navigation */
+    .navigation {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .nav-btn {
+        display: inline-block;
+        text-decoration: none;
+        padding: 10px 17px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .dashboard-btn {
+        color: #4f46e5;
+        background: white;
+        border: 1px solid #e5e7eb;
+    }
+
+    .dashboard-btn:hover {
+        background: #4f46e5;
+        color: white;
+    }
+
+    .add-btn {
+        background: #10b981;
+        color: white;
+    }
+
+    .add-btn:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    /* Alerts */
+    .alert {
+        padding: 13px 17px;
+        border-radius: 9px;
+        margin-bottom: 18px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .alert-success {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+
+    .alert-error {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    /* Table card */
+    .table-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, 0.06);
+    }
+
+    .table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .table-header h2 {
+        font-size: 20px;
+        color: #1e293b;
+    }
+
+    .product-count {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    /* Table */
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        min-width: 950px;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background: #f8fafc;
+    }
+
+    th {
+        text-align: left;
+        padding: 14px 15px;
+        color: #64748b;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 15px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    tbody tr {
+        transition: 0.2s;
+    }
+
+    tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* ID */
+    .product-id {
+        color: #4f46e5;
+        font-weight: 700;
+    }
+
+    /* Product name */
+    .product-name {
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    /* Category */
+    .category {
+        display: inline-block;
+        background: #f1f5f9;
+        color: #475569;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* Price */
+    .price {
+        color: #dc2626;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    /* Stock */
+    .stock {
+        font-weight: 600;
+        color: #475569;
+    }
+
+    .stock-low {
+        color: #dc2626;
+    }
+
+    /* Status */
+    .status-active,
+    .status-hidden {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .status-active {
+        background: #ecfdf5;
+        color: #059669;
+    }
+
+    .status-hidden {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+
+    /* Actions */
+    .actions {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .edit-btn,
+    .toggle-btn,
+    .delete-btn {
+        display: inline-block;
+        padding: 7px 11px;
+        border: none;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: 0.2s;
+        white-space: nowrap;
+    }
+
+    .edit-btn {
+        background: #eef2ff;
+        color: #4f46e5;
+    }
+
+    .edit-btn:hover {
+        background: #4f46e5;
+        color: white;
+    }
+
+    .toggle-btn {
+        background: #fff7ed;
+        color: #ea580c;
+    }
+
+    .toggle-btn:hover {
+        background: #ea580c;
+        color: white;
+    }
+
+    .delete-btn {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .delete-btn:hover {
+        background: #dc2626;
+        color: white;
+    }
+
+    /* Empty */
+    .empty {
+        text-align: center;
+        padding: 45px !important;
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 7px;
+        margin-top: 25px;
+    }
+
+    .page-link {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-decoration: none;
+        background: white;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        border-radius: 7px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .page-link:hover {
+        background: #eef2ff;
+        color: #4f46e5;
+        border-color: #c7d2fe;
+    }
+
+    .page-link.active {
+        background: #4f46e5;
+        color: white;
+        border-color: #4f46e5;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            width: 94%;
+            margin: 20px auto;
+        }
+
+        .header {
+            padding: 22px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .table-card {
+            padding: 18px;
+        }
+
+        .table-header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 6px;
+        }
+    }
+  </style>
+
+</head> <body> <div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Quản lý Sản phẩm</h1>
+    <p>Quản lý sản phẩm, giá bán, tồn kho và trạng thái hiển thị</p>
+  </div>
+
+  <!-- Navigation -->
+  <div class="navigation">
+
+    <a href="/manager/dashboard"
+       class="nav-btn dashboard-btn">
+      ← Dashboard
+    </a>
+
+    <a href="/manager/products/create"
+       class="nav-btn add-btn">
+      + Thêm sản phẩm
+    </a>
+
+  </div>
+
+  <!-- Alerts -->
+  <div th:if="${success}"
+       class="alert alert-success"
+       th:text="${success}">
+  </div>
+
+  <div th:if="${error}"
+       class="alert alert-error"
+       th:text="${error}">
+  </div>
+
+  <!-- Product table -->
+  <div class="table-card">
+
+    <div class="table-header">
+
+      <h2>📦 Danh sách sản phẩm</h2>
+
+      <span class="product-count"
+            th:text="'Tổng: ' + ${products.totalElements} + ' sản phẩm'">
+            Tổng sản phẩm
+        </span>
+
+    </div>
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tên</th>
+          <th>Danh mục</th>
+          <th>Giá</th>
+          <th>Tồn kho</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        <tr th:each="p : ${products.content}">
+
+          <td class="product-id"
+              th:text="${p.id}">
+          </td>
+
+          <td class="product-name"
+              th:text="${p.name}">
+          </td>
+
+          <td>
+                    <span class="category"
+                          th:text="${p.category?.name != null ? p.category.name : 'Chưa phân loại'}">
+                    </span>
+          </td>
+
+          <td class="price"
+              th:text="${p.price}">
+          </td>
+
+          <td>
+                    <span class="stock"
+                          th:classappend="${p.stock <= 5} ? 'stock-low' : ''"
+                          th:text="${p.stock}">
+                    </span>
+          </td>
+
+          <td>
+
+                    <span th:if="${p.status}"
+                          class="status-active">
+                        ● Hoạt động
+                    </span>
+
+            <span th:unless="${p.status}"
+                  class="status-hidden">
+                        ● Ẩn
+                    </span>
+
+          </td>
+
+          <td>
+
+            <div class="actions">
+
+              <a th:href="@{/manager/products/{id}/edit(id=${p.id})}"
+                 class="edit-btn">
+                ✏ Sửa
+              </a>
+
+              <form th:action="@{/manager/products/{id}/toggle-status(id=${p.id})}"
+                    method="post">
+
+                <input type="hidden"
+                       name="status"
+                       th:value="${!p.status}">
+
+                <button type="submit"
+                        class="toggle-btn"
+                        th:text="${p.status} ? 'Ẩn' : 'Hiện'">
+                </button>
+
+              </form>
+
+              <form th:action="@{/manager/products/{id}/delete(id=${p.id})}"
+                    method="post"
+                    onsubmit="return confirm('Xóa sản phẩm này?')">
+
+                <button type="submit"
+                        class="delete-btn">
+                  🗑 Xóa
+                </button>
+
+              </form>
+
+            </div>
+
+          </td>
+
+        </tr>
+
+        <tr th:if="${products.empty}">
+          <td colspan="7" class="empty">
+            📦 Chưa có sản phẩm nào.
+          </td>
+        </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination"
+         th:if="${products.totalPages > 1}">
+
+        <span th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}">
+
+            <a th:href="@{/manager/products(page=${i})}"
+               class="page-link"
+               th:classappend="${i == products.number} ? 'active' : ''"
+               th:text="${i + 1}">
+                1
+            </a>
+
+        </span>
+
+    </div>
+
+  </div>
+
+</div> </body> </html>

@@ -1,66 +1,579 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Chi tiết đơn hàng - Manager</title></head>
-<body>
-<h1>Chi tiết Đơn hàng #<span th:text="${order.id}"></span></h1>
-<a href="/manager/orders">← Danh sách đơn hàng</a>
-<hr>
-<div th:if="${success}" style="color:green" th:text="${success}"></div>
-<div th:if="${error}" style="color:red" th:text="${error}"></div>
+<!DOCTYPE html> <html xmlns:th="http://www.thymeleaf.org"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Chi tiết đơn hàng - Manager</title>
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-<h2>Thông tin đơn</h2>
-<table border="1" cellpadding="8">
-  <tr><td>Khách hàng</td><td th:text="${order.user?.email}"></td></tr>
-  <tr><td>Địa chỉ giao hàng</td><td th:text="${order.shippingAddress}"></td></tr>
-  <tr><td>SĐT</td><td th:text="${order.recipientPhone}"></td></tr>
-  <tr><td>Tên người nhận</td><td th:text="${order.recipientName}"></td></tr>
-  <tr><td>Mã giảm giá</td><td th:text="${order.discountCode}"></td></tr>
-  <tr><td>Giảm giá</td><td th:text="${order.discountAmount}"></td></tr>
-  <tr><td>Tổng tiền</td><td th:text="${order.finalAmount}"></td></tr>
-  <tr><td>Trạng thái</td><td th:text="${order.status}"></td></tr>
-  <tr><td>Ngày đặt</td><td th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"></td></tr>
-</table>
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f4f7fb;
+        color: #334155;
+        min-height: 100vh;
+    }
 
-<h2>Thanh toán</h2>
-<table border="1" cellpadding="8" th:if="${payment != null}">
-  <tr><td>Phương thức</td><td th:text="${payment.method}"></td></tr>
-  <tr><td>Trạng thái thanh toán</td><td th:text="${payment.status}"></td></tr>
-  <tr><td>Ngày thanh toán</td>
-    <td th:text="${payment.paidAt != null ? #temporals.format(payment.paidAt, 'dd/MM/yyyy HH:mm') : '-'}"></td>
-  </tr>
-</table>
-<p th:if="${payment == null}">Chưa có thông tin thanh toán.</p>
+    .container {
+        width: 94%;
+        max-width: 1200px;
+        margin: 40px auto;
+    }
 
-<h2>Sản phẩm</h2>
-<table border="1" cellpadding="8">
-  <thead>
-    <tr><th>Sản phẩm</th><th>Giá tại thời điểm</th><th>Số lượng</th><th>Thành tiền</th></tr>
-  </thead>
-  <tbody>
-    <tr th:each="item : ${order.orderItems}">
-      <td th:text="${item.product.name}"></td>
-      <td th:text="${item.price}"></td>
-      <td th:text="${item.quantity}"></td>
-      <td th:text="${item.price * item.quantity}"></td>
-    </tr>
-    <tr th:if="${#lists.isEmpty(order.items)}">
-      <td colspan="4">Đơn hàng không có sản phẩm.</td>
-    </tr>
-  </tbody>
-</table>
+    /* Header */
+    .header {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        padding: 28px 35px;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.2);
+        margin-bottom: 20px;
+    }
 
-<h2>Cập nhật trạng thái</h2>
-<form th:action="@{/manager/orders/{id}/status(id=${order.id})}" method="post">
-  <select name="newStatus">
-    <option value="PENDING" th:selected="${order.status.name() == 'PENDING'}">PENDING</option>
-    <option value="CONFIRMED" th:selected="${order.status.name() == 'CONFIRMED'}">CONFIRMED</option>
-    <option value="SHIPPING" th:selected="${order.status.name() == 'SHIPPING'}">SHIPPING</option>
-    <option value="DELIVERED" th:selected="${order.status.name() == 'DELIVERED'}">DELIVERED</option>
-    <option value="CANCELLED" th:selected="${order.status.name() == 'CANCELLED'}">CANCELLED</option>
-    <option value="RETURN_REQUESTED" th:selected="${order.status.name() == 'RETURN_REQUESTED'}">RETURN_REQUESTED</option>
-    <option value="REFUNDED" th:selected="${order.status.name() == 'REFUNDED'}">REFUNDED</option>
-  </select>
-  <button type="submit">Cập nhật</button>
-</form>
-</body>
-</html>
+    .header h1 {
+        font-size: 28px;
+        margin-bottom: 7px;
+    }
+
+    .header p {
+        color: #e0e7ff;
+        font-size: 14px;
+    }
+
+    /* Back */
+    .back-link {
+        display: inline-block;
+        text-decoration: none;
+        color: #4f46e5;
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 10px 17px;
+        border-radius: 8px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        transition: 0.2s;
+    }
+
+    .back-link:hover {
+        background: #4f46e5;
+        color: white;
+    }
+
+    /* Alert */
+    .alert {
+        padding: 13px 17px;
+        border-radius: 9px;
+        margin-bottom: 18px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .success {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+
+    .error {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    /* Grid */
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    /* Card */
+    .card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, 0.06);
+        margin-bottom: 20px;
+    }
+
+    .info-grid .card {
+        margin-bottom: 0;
+    }
+
+    .card h2 {
+        font-size: 19px;
+        color: #1e293b;
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    /* Info table */
+    .info-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .info-table tr {
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .info-table tr:last-child {
+        border-bottom: none;
+    }
+
+    .info-table td {
+        padding: 11px 5px;
+        font-size: 14px;
+    }
+
+    .info-table td:first-child {
+        width: 40%;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .info-table td:last-child {
+        color: #334155;
+        font-weight: 500;
+    }
+
+    /* Status */
+    .status {
+        display: inline-block;
+        padding: 6px 11px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #eef2ff;
+        color: #4f46e5;
+    }
+
+    /* Amount */
+    .amount {
+        color: #dc2626 !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
+    }
+
+    .discount {
+        color: #059669 !important;
+        font-weight: 600 !important;
+    }
+
+    /* Payment */
+    .payment-method {
+        display: inline-block;
+        padding: 5px 10px;
+        background: #eff6ff;
+        color: #2563eb;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .payment-status {
+        display: inline-block;
+        padding: 5px 10px;
+        background: #ecfdf5;
+        color: #059669;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .no-payment {
+        color: #94a3b8;
+        font-style: italic;
+        font-size: 14px;
+    }
+
+    /* Products */
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .product-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .product-table thead {
+        background: #f8fafc;
+    }
+
+    .product-table th {
+        text-align: left;
+        padding: 14px;
+        color: #64748b;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .product-table td {
+        padding: 15px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+    }
+
+    .product-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .product-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .product-name {
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .product-price {
+        color: #475569;
+    }
+
+    .product-quantity {
+        display: inline-block;
+        min-width: 30px;
+        text-align: center;
+        background: #f1f5f9;
+        color: #475569;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    .total-price {
+        color: #dc2626;
+        font-weight: 700;
+    }
+
+    .empty {
+        text-align: center;
+        padding: 35px !important;
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    /* Update status */
+    .status-form {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .status-select {
+        flex: 1;
+        padding: 11px 13px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: white;
+        color: #374151;
+        font-size: 14px;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .status-select:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    .update-btn {
+        padding: 11px 20px;
+        border: none;
+        border-radius: 8px;
+        background: #4f46e5;
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .update-btn:hover {
+        background: #4338ca;
+        transform: translateY(-1px);
+        box-shadow: 0 5px 12px rgba(79, 70, 229, 0.2);
+    }
+
+    @media (max-width: 800px) {
+        .container {
+            width: 94%;
+            margin: 20px auto;
+        }
+
+        .header {
+            padding: 22px;
+        }
+
+        .header h1 {
+            font-size: 23px;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .status-form {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .update-btn {
+            width: 100%;
+        }
+    }
+  </style>
+
+</head> <body> <div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>
+      Chi tiết Đơn hàng #<span th:text="${order.id}"></span>
+    </h1>
+    <p>Thông tin chi tiết, thanh toán và sản phẩm trong đơn hàng</p>
+  </div>
+
+  <a href="/manager/orders" class="back-link">
+    ← Danh sách đơn hàng
+  </a>
+
+  <!-- Messages -->
+  <div th:if="${success}"
+       class="alert success"
+       th:text="${success}">
+  </div>
+
+  <div th:if="${error}"
+       class="alert error"
+       th:text="${error}">
+  </div>
+
+  <!-- Order + Payment -->
+  <div class="info-grid">
+
+    <!-- Order information -->
+    <div class="card">
+
+      <h2>📋 Thông tin đơn hàng</h2>
+
+      <table class="info-table">
+
+        <tr>
+          <td>Khách hàng</td>
+          <td th:text="${order.user?.email}"></td>
+        </tr>
+
+        <tr>
+          <td>Người nhận</td>
+          <td th:text="${order.recipientName}"></td>
+        </tr>
+
+        <tr>
+          <td>SĐT</td>
+          <td th:text="${order.recipientPhone}"></td>
+        </tr>
+
+        <tr>
+          <td>Địa chỉ giao hàng</td>
+          <td th:text="${order.shippingAddress}"></td>
+        </tr>
+
+        <tr>
+          <td>Mã giảm giá</td>
+          <td th:text="${order.discountCode != null ? order.discountCode : '-'}"></td>
+        </tr>
+
+        <tr>
+          <td>Giảm giá</td>
+          <td class="discount"
+              th:text="${order.discountAmount}">
+          </td>
+        </tr>
+
+        <tr>
+          <td>Tổng tiền</td>
+          <td class="amount"
+              th:text="${order.finalAmount}">
+          </td>
+        </tr>
+
+        <tr>
+          <td>Trạng thái</td>
+          <td>
+                    <span class="status"
+                          th:text="${order.status}">
+                    </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Ngày đặt</td>
+          <td th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+        </tr>
+
+      </table>
+
+    </div>
+
+    <!-- Payment -->
+    <div class="card">
+
+      <h2>💳 Thanh toán</h2>
+
+      <table class="info-table"
+             th:if="${payment != null}">
+
+        <tr>
+          <td>Phương thức</td>
+          <td>
+                    <span class="payment-method"
+                          th:text="${payment.method}">
+                    </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Trạng thái</td>
+          <td>
+                    <span class="payment-status"
+                          th:text="${payment.status}">
+                    </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Ngày thanh toán</td>
+          <td th:text="${payment.paidAt != null ? #temporals.format(payment.paidAt, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+        </tr>
+
+      </table>
+
+      <p class="no-payment"
+         th:if="${payment == null}">
+        Chưa có thông tin thanh toán.
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- Products -->
+  <div class="card">
+
+    <h2>📦 Sản phẩm trong đơn hàng</h2>
+
+    <div class="table-wrapper">
+
+      <table class="product-table">
+
+        <thead>
+        <tr>
+          <th>Sản phẩm</th>
+          <th>Giá tại thời điểm</th>
+          <th>Số lượng</th>
+          <th>Thành tiền</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        <tr th:each="item : ${order.orderItems}">
+
+          <td class="product-name"
+              th:text="${item.product.name}">
+          </td>
+
+          <td class="product-price"
+              th:text="${item.price}">
+          </td>
+
+          <td>
+                    <span class="product-quantity"
+                          th:text="${item.quantity}">
+                    </span>
+          </td>
+
+          <td class="total-price"
+              th:text="${item.price * item.quantity}">
+          </td>
+
+        </tr>
+
+        <tr th:if="${#lists.isEmpty(order.items)}">
+          <td colspan="4" class="empty">
+            Đơn hàng không có sản phẩm.
+          </td>
+        </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+  <!-- Update status -->
+  <div class="card">
+
+    <h2>🔄 Cập nhật trạng thái</h2>
+
+    <form th:action="@{/manager/orders/{id}/status(id=${order.id})}"
+          method="post"
+          class="status-form">
+
+      <select name="newStatus"
+              class="status-select">
+
+        <option value="PENDING"
+                th:selected="${order.status.name() == 'PENDING'}">
+          PENDING
+        </option>
+
+        <option value="CONFIRMED"
+                th:selected="${order.status.name() == 'CONFIRMED'}">
+          CONFIRMED
+        </option>
+
+        <option value="SHIPPING"
+                th:selected="${order.status.name() == 'SHIPPING'}">
+          SHIPPING
+        </option>
+
+        <option value="DELIVERED"
+                th:selected="${order.status.name() == 'DELIVERED'}">
+          DELIVERED
+        </option>
+
+        <option value="CANCELLED"
+                th:selected="${order.status.name() == 'CANCELLED'}">
+          CANCELLED
+        </option>
+
+        <option value="RETURN_REQUESTED"
+                th:selected="${order.status.name() == 'RETURN_REQUESTED'}">
+          RETURN_REQUESTED
+        </option>
+
+        <option value="REFUNDED"
+                th:selected="${order.status.name() == 'REFUNDED'}">
+          REFUNDED
+        </option>
+
+      </select>
+
+      <button type="submit" class="update-btn">
+        ✓ Cập nhật trạng thái
+      </button>
+
+    </form>
+
+  </div>
+
+</div> </body> </html>

@@ -1,87 +1,489 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Sản phẩm - Manager</title></head>
-<body>
-<h1 th:text="${product != null} ? 'Sửa sản phẩm' : 'Thêm sản phẩm'">Form sản phẩm</h1>
-<a href="/manager/products">← Quay lại</a>
-<hr>
-<div th:if="${error}" style="color:red" th:text="${error}"></div>
+<!DOCTYPE html> <html xmlns:th="http://www.thymeleaf.org"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Sản phẩm - Manager</title>
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-<form th:action="${product != null} ? @{/manager/products/{id}/edit(id=${product.id})} : @{/manager/products/create}"
-      method="post" enctype="multipart/form-data">
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f4f7fb;
+        color: #334155;
+        min-height: 100vh;
+    }
 
-  <div>
-    <label>Danh mục:</label><br>
-    <select name="categoryId" required>
-      <option value="">-- Chọn danh mục --</option>
-      <option th:each="c : ${categories}"
-              th:value="${c.id}"
-              th:text="${c.name}"
-              th:selected="${product != null and product.category?.id == c.id}"></option>
-    </select>
-  </div>
-  <div>
-    <label>Tên sản phẩm:</label><br>
-    <input type="text" name="name" required th:value="${product?.name}">
-  </div>
-  <div>
-    <label>Mô tả:</label><br>
-    <textarea name="description" rows="4" cols="50" th:text="${product?.description}"></textarea>
-  </div>
-  <div>
-    <label>Giá:</label><br>
-    <input type="number" name="price" step="0.01" min="0" required th:value="${product?.price}">
-  </div>
-  <div>
-    <label>Tồn kho:</label><br>
-    <input type="number" name="stock" min="0" required th:value="${product?.stock}">
-  </div>
-  <div>
-    <label>RAM:</label><br>
-    <input type="text"
-           name="ram"
-           placeholder="Ví dụ: 8GB"
-           th:value="${product?.productSpec?.ram}">
+    .container {
+        width: 94%;
+        max-width: 1000px;
+        margin: 40px auto;
+    }
+
+    /* Header */
+    .header {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        padding: 30px 35px;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.2);
+        margin-bottom: 20px;
+    }
+
+    .header h1 {
+        font-size: 29px;
+        margin-bottom: 7px;
+    }
+
+    .header p {
+        color: #e0e7ff;
+        font-size: 14px;
+    }
+
+    /* Back */
+    .back-link {
+        display: inline-block;
+        text-decoration: none;
+        color: #4f46e5;
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 10px 17px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        transition: 0.2s;
+    }
+
+    .back-link:hover {
+        background: #4f46e5;
+        color: white;
+    }
+
+    /* Error */
+    .alert-error {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        padding: 13px 17px;
+        border-radius: 9px;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    /* Form card */
+    .form-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, 0.06);
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: #1e293b;
+        font-size: 19px;
+        padding-bottom: 14px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .section-title:not(:first-child) {
+        margin-top: 30px;
+    }
+
+    /* Form layout */
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    label {
+        display: block;
+        color: #374151;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 7px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        width: 100%;
+        padding: 11px 13px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: white;
+        color: #374151;
+        font-family: inherit;
+        font-size: 14px;
+        outline: none;
+        transition: 0.2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 110px;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+        color: #9ca3af;
+    }
+
+    select {
+        cursor: pointer;
+    }
+
+    /* Image */
+    .image-box {
+        border: 2px dashed #dbe2ea;
+        border-radius: 12px;
+        padding: 20px;
+        background: #fafbfc;
+    }
+
+    .current-image {
+        display: block;
+        width: 130px;
+        height: 130px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        background: white;
+        margin-bottom: 15px;
+    }
+
+    input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: white;
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    .image-note {
+        display: block;
+        color: #94a3b8;
+        font-size: 12px;
+        margin-top: 7px;
+    }
+
+    /* Submit */
+    .form-actions {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #eef2f7;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 13px;
+        border: none;
+        border-radius: 9px;
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: white;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .submit-btn:hover {
+        background: linear-gradient(135deg, #4338ca, #4f46e5);
+        transform: translateY(-1px);
+        box-shadow: 0 5px 15px rgba(79, 70, 229, 0.25);
+    }
+
+    @media (max-width: 700px) {
+        .container {
+            width: 94%;
+            margin: 20px auto;
+        }
+
+        .header {
+            padding: 22px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .form-card {
+            padding: 22px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+    }
+  </style>
+
+</head> <body> <div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1 th:text="${product != null} ? 'Sửa sản phẩm' : 'Thêm sản phẩm'">
+      Form sản phẩm
+    </h1>
+
+    <p>
+      Quản lý thông tin, giá bán, tồn kho và thông số sản phẩm
+    </p>
   </div>
 
-  <div>
-    <label>Bộ nhớ trong:</label><br>
-    <input type="text"
-           name="storage"
-           placeholder="Ví dụ: 256GB"
-           th:value="${product?.productSpec?.storage}">
+  <!-- Back -->
+  <a href="/manager/products" class="back-link">
+    ← Quay lại danh sách
+  </a>
+
+  <!-- Error -->
+  <div th:if="${error}"
+       class="alert-error"
+       th:text="${error}">
   </div>
 
-  <div>
-    <label>Màu sắc:</label><br>
-    <input type="text"
-           name="color"
-           placeholder="Ví dụ: Đen"
-           th:value="${product?.productSpec?.color}">
+  <!-- Form -->
+  <div class="form-card">
+
+    <form th:action="${product != null} ? @{/manager/products/{id}/edit(id=${product.id})} : @{/manager/products/create}"
+          method="post"
+          enctype="multipart/form-data">
+
+      <!-- Basic information -->
+      <h2 class="section-title">
+        📦 Thông tin sản phẩm
+      </h2>
+
+      <div class="form-group">
+
+        <label for="categoryId">
+          Danh mục
+        </label>
+
+        <select name="categoryId"
+                id="categoryId"
+                required>
+
+          <option value="">
+            -- Chọn danh mục --
+          </option>
+
+          <option th:each="c : ${categories}"
+                  th:value="${c.id}"
+                  th:text="${c.name}"
+                  th:selected="${product != null and product.category?.id == c.id}">
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="form-group">
+
+        <label for="name">
+          Tên sản phẩm
+        </label>
+
+        <input type="text"
+               id="name"
+               name="name"
+               placeholder="Nhập tên sản phẩm..."
+               required
+               th:value="${product?.name}">
+
+      </div>
+
+      <div class="form-group">
+
+        <label for="description">
+          Mô tả sản phẩm
+        </label>
+
+        <textarea id="description"
+                  name="description"
+                  placeholder="Nhập mô tả sản phẩm..."
+                  th:text="${product?.description}"></textarea>
+
+      </div>
+
+      <!-- Price & stock -->
+      <h2 class="section-title">
+        💰 Giá & tồn kho
+      </h2>
+
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label for="price">
+            Giá sản phẩm
+          </label>
+
+          <input type="number"
+                 id="price"
+                 name="price"
+                 step="0.01"
+                 min="0"
+                 placeholder="Ví dụ: 15990000"
+                 required
+                 th:value="${product?.price}">
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="stock">
+            Tồn kho
+          </label>
+
+          <input type="number"
+                 id="stock"
+                 name="stock"
+                 min="0"
+                 placeholder="Ví dụ: 100"
+                 required
+                 th:value="${product?.stock}">
+
+        </div>
+
+      </div>
+
+      <!-- Specifications -->
+      <h2 class="section-title">
+        ⚙️ Thông số kỹ thuật
+      </h2>
+
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label for="ram">
+            RAM
+          </label>
+
+          <input type="text"
+                 id="ram"
+                 name="ram"
+                 placeholder="Ví dụ: 8GB"
+                 th:value="${product?.productSpec?.ram}">
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="storage">
+            Bộ nhớ trong
+          </label>
+
+          <input type="text"
+                 id="storage"
+                 name="storage"
+                 placeholder="Ví dụ: 256GB"
+                 th:value="${product?.productSpec?.storage}">
+
+        </div>
+
+      </div>
+
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label for="color">
+            Màu sắc
+          </label>
+
+          <input type="text"
+                 id="color"
+                 name="color"
+                 placeholder="Ví dụ: Đen"
+                 th:value="${product?.productSpec?.color}">
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="screenSize">
+            Kích thước màn hình
+          </label>
+
+          <input type="text"
+                 id="screenSize"
+                 name="screenSize"
+                 placeholder="Ví dụ: 6.7 inch"
+                 th:value="${product?.productSpec?.screenSize}">
+
+        </div>
+
+      </div>
+
+      <div class="form-group">
+
+        <label for="battery">
+          Dung lượng pin
+        </label>
+
+        <input type="text"
+               id="battery"
+               name="battery"
+               placeholder="Ví dụ: 5000mAh"
+               th:value="${product?.productSpec?.battery}">
+
+      </div>
+
+      <!-- Image -->
+      <h2 class="section-title">
+        🖼️ Hình ảnh sản phẩm
+      </h2>
+
+      <div class="image-box">
+
+        <img th:if="${product?.imageUrl}"
+             th:src="${product.imageUrl}"
+             class="current-image">
+
+        <input type="file"
+               name="image"
+               accept="image/*">
+
+        <span class="image-note">
+                Để trống nếu bạn không muốn thay đổi ảnh hiện tại.
+            </span>
+
+      </div>
+
+      <!-- Submit -->
+      <div class="form-actions">
+
+        <button type="submit"
+                class="submit-btn"
+                th:text="${product != null} ? '✓ Cập nhật sản phẩm' : '+ Thêm sản phẩm'">
+          Lưu
+        </button>
+
+      </div>
+
+    </form>
+
   </div>
 
-  <div>
-    <label>Kích thước màn hình:</label><br>
-    <input type="text"
-           name="screenSize"
-           placeholder="Ví dụ: 6.7 inch"
-           th:value="${product?.productSpec?.screenSize}">
-  </div>
-
-  <div>
-    <label>Dung lượng pin:</label><br>
-    <input type="text"
-           name="battery"
-           placeholder="Ví dụ: 5000mAh"
-           th:value="${product?.productSpec?.battery}">
-  </div>
-  <div>
-    <label>Ảnh sản phẩm (để trống nếu không thay đổi):</label><br>
-    <img th:if="${product?.imageUrl}" th:src="${product.imageUrl}" width="100"><br>
-    <input type="file" name="image" accept="image/*">
-  </div>
-  <br>
-  <button type="submit" th:text="${product != null} ? 'Cập nhật' : 'Thêm mới'">Lưu</button>
-</form>
-</body>
-</html>
+</div> </body> </html>
