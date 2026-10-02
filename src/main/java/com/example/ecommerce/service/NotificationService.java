@@ -3,6 +3,7 @@ package com.example.ecommerce.service;
 import com.example.ecommerce.entity.Notification;
 import com.example.ecommerce.entity.User;
 import com.example.ecommerce.enums.NotificationType;
+import com.example.ecommerce.enums.Role;
 import com.example.ecommerce.repository.NotificationRepository;
 import com.example.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -89,6 +90,30 @@ public class NotificationService {
                 .build();
 
         return notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void notifyManagers(
+            String title,
+            String message,
+            NotificationType type
+    ) {
+        if (title == null || title.isBlank()
+                || message == null || message.isBlank()
+                || type == null) {
+            return;
+        }
+
+        userRepository.findByRole(Role.MANAGER, Pageable.unpaged())
+                .forEach(manager -> notificationRepository.save(
+                        Notification.builder()
+                                .user(manager)
+                                .title(title.trim())
+                                .message(message.trim())
+                                .type(type)
+                                .isRead(false)
+                                .build()
+                ));
     }
 
     @Transactional

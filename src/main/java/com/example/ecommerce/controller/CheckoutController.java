@@ -148,6 +148,13 @@ public class CheckoutController {
             if (paymentUrl != null) {
                 return "redirect:" + paymentUrl;
             }
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Không tạo được liên kết thanh toán. Vui lòng chọn lại phương thức thanh toán."
+            );
+            return "redirect:/orders/" + order.getId()
+                    + "/payment-method";
         }
 
         redirectAttributes.addFlashAttribute(

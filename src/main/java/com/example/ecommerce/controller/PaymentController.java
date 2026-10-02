@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/payment")
@@ -18,14 +19,26 @@ public class PaymentController {
 
     @GetMapping("/vnpay-return")
     public String vnpayReturn(
-            HttpServletRequest request) {
+            HttpServletRequest request,
+            RedirectAttributes redirectAttributes) {
 
         VnPayResult result =
                 vnPayService.verifyReturn(request);
 
         if (result.isValid()) {
 
-            paymentService.handleVnPayResult(result);
+            if (!paymentService.handleVnPayResult(result)) {
+                return "redirect:/orders/payment-result?status=invalid";
+            }
+
+            if (!result.isSuccess()) {
+                redirectAttributes.addFlashAttribute(
+                        "error",
+                        "Thanh toán đã bị hủy hoặc thất bại. Hãy chọn lại phương thức thanh toán."
+                );
+                return "redirect:/orders/" + result.getOrderId()
+                        + "/payment-method";
+            }
 
             return "redirect:/orders/"
                     + result.getOrderId();

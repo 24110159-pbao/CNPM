@@ -150,6 +150,23 @@ public class VnPayService {
             return VnPayResult.invalid();
         }
 
+        if (payment.getTransactionNo() == null
+                || !payment.getTransactionNo().equals(transactionNo)
+                || order.getStatus() != com.example.ecommerce.enums.OrderStatus.PENDING) {
+            return VnPayResult.invalid();
+        }
+
+        try {
+            BigDecimal callbackAmount = new BigDecimal(amount);
+            BigDecimal expectedAmount = order.getFinalAmount()
+                    .multiply(BigDecimal.valueOf(100));
+            if (callbackAmount.compareTo(expectedAmount) != 0) {
+                return VnPayResult.invalid();
+            }
+        } catch (NumberFormatException | NullPointerException e) {
+            return VnPayResult.invalid();
+        }
+
         boolean success =
                 "00".equals(responseCode)
                         && "00".equals(transactionStatus);

@@ -113,9 +113,15 @@
         </form>
 
         <!-- Yêu cầu trả hàng/hoàn tiền khi DELIVERED -->
-        <form th:if="${order.status.name() == 'DELIVERED'}" th:action="@{/orders/{id}/return(id=${order.id})}" method="post">
+        <form th:if="${order.status.name() == 'DELIVERED'}" th:action="@{/orders/{id}/return(id=${order.id})}" method="post" class="d-flex flex-wrap gap-2 align-items-center">
+            <input type="text" name="bankName" class="form-control" maxlength="100" placeholder="Tên ngân hàng" required>
+            <input type="text" name="bankAccountNumber" class="form-control" inputmode="numeric" pattern="[0-9]{6,30}" maxlength="30" placeholder="Số tài khoản" required>
             <button type="submit" class="btn btn-warning" onclick="return confirm('Gửi yêu cầu trả hàng/hoàn tiền cho đơn này?')">Yêu cầu trả hàng / Hoàn tiền</button>
         </form>
+
+        <a th:if="${order.status.name() == 'PENDING' and payment != null and payment.status.name() != 'PAID' and payment.status.name() != 'REFUNDED'}"
+           th:href="@{/orders/{id}/payment-method(id=${order.id})}"
+           class="btn btn-outline-primary">Chọn lại phương thức thanh toán</a>
     </div>
 </div>
 

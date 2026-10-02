@@ -112,6 +112,12 @@ public class PaymentService {
             return false;
         }
 
+        if (payment.getStatus() != PaymentStatus.PENDING
+                || payment.getTransactionNo() == null
+                || !payment.getTransactionNo().equals(result.getTransactionNo())) {
+            return false;
+        }
+
         payment.setTransactionNo(
                 result.getTransactionNo()
         );
@@ -136,6 +142,33 @@ public class PaymentService {
 
         paymentRepository.save(payment);
 
+        return true;
+    }
+
+    @Transactional
+    public boolean resetUnpaidPayment(
+            Long orderId,
+            PaymentMethod method
+    ) {
+        if (orderId == null || method == null) {
+            return false;
+        }
+
+        Payment payment = paymentRepository
+                .findByOrderId(orderId)
+                .orElse(null);
+
+        if (payment == null
+                || payment.getStatus() == PaymentStatus.PAID
+                || payment.getStatus() == PaymentStatus.REFUNDED) {
+            return false;
+        }
+
+        payment.setMethod(method);
+        payment.setStatus(PaymentStatus.PENDING);
+        payment.setTransactionNo(null);
+        payment.setPaidAt(null);
+        paymentRepository.save(payment);
         return true;
     }
 
