@@ -1,5 +1,23 @@
-<!-- IMPLEMENTATION NOTES ONLY. This is an empty Thymeleaf placeholder, not a working chatbox. -->
-<!-- Next AI: implement a Thymeleaf fragment integrated into the existing manager/dashboard.html, using the current Bootstrap/manager visual conventions. -->
-<!-- Include message history for the current browser session only, question input, submit button, loading/empty/error states, and an accessible live response region. -->
-<!-- Load admin-ai-chat.js; POST JSON to /manager/ai/chat. Do not include Gemini keys, SQL editor/execution, DB details, or new framework dependencies. -->
-<!-- Render all user/model strings as text, not raw HTML. Preserve manager-only access; no new database history tables. -->
+<section xmlns:th="http://www.thymeleaf.org" th:fragment="aiChatbox" class="ai-chat-card" aria-labelledby="ai-chat-title">
+	<div class="ai-chat-heading">
+		<div>
+			<h2 id="ai-chat-title" class="section-title">✨ AI trợ lý quản trị</h2>
+			<p>Đặt câu hỏi về dữ liệu đơn hàng, sản phẩm và người dùng.</p>
+		</div>
+		<span class="ai-chat-badge">READ ONLY</span>
+	</div>
+
+	<div id="ai-chat-messages" class="ai-chat-messages" aria-live="polite" aria-relevant="additions text">
+		<p class="ai-chat-empty">Ví dụ: “Có bao nhiêu đơn hàng đang giao?” hoặc “Top 10 sản phẩm bán chạy”.</p>
+	</div>
+
+	<form id="ai-chat-form" class="ai-chat-form">
+		<label class="ai-chat-sr-only" for="ai-chat-question">Câu hỏi cho AI</label>
+		<textarea id="ai-chat-question" name="question" maxlength="1000" rows="2"
+							placeholder="Nhập câu hỏi về dữ liệu quản trị…" required></textarea>
+		<div class="ai-chat-actions">
+			<span id="ai-chat-status" class="ai-chat-status" role="status">Không lưu lịch sử sau khi tải lại trang.</span>
+			<button id="ai-chat-submit" type="submit">Gửi câu hỏi <span aria-hidden="true">➤</span></button>
+		</div>
+	</form>
+</section>
