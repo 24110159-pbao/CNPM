@@ -25,17 +25,41 @@ public class AdminAiController {
 	private final AdminAiService adminAiService;
 
 	@PostMapping("/chat")
-	public AiChatResponse chat(@Valid @RequestBody AiChatRequest request) {
-		return adminAiService.chat(request.question().trim());
+	public AiChatResponse chat(
+			@Valid @RequestBody AiChatRequest request
+	) {
+
+		return adminAiService.chat(
+				request.question().trim()
+		);
 	}
 
-	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<AiChatResponse> handleInvalidRequest(MethodArgumentNotValidException exception) {
-		String message = exception.getBindingResult().getFieldErrors().stream()
-				.findFirst()
-				.map(FieldError::getDefaultMessage)
-				.orElse("Yêu cầu không hợp lệ.");
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(new AiChatResponse(message, false));
+	@ExceptionHandler(
+			MethodArgumentNotValidException.class
+	)
+	public ResponseEntity<AiChatResponse>
+	handleInvalidRequest(
+			MethodArgumentNotValidException exception
+	) {
+
+		String message =
+				exception
+						.getBindingResult()
+						.getFieldErrors()
+						.stream()
+						.findFirst()
+						.map(FieldError::getDefaultMessage)
+						.orElse(
+								"Yêu cầu không hợp lệ."
+						);
+
+		return ResponseEntity
+				.status(HttpStatus.BAD_REQUEST)
+				.body(
+						new AiChatResponse(
+								message,
+								false
+						)
+				);
 	}
 }

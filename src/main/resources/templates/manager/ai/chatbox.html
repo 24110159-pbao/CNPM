@@ -1,23 +1,76 @@
-<section xmlns:th="http://www.thymeleaf.org" th:fragment="aiChatbox" class="ai-chat-card" aria-labelledby="ai-chat-title">
+<section xmlns:th="http://www.thymeleaf.org"
+		 th:fragment="aiChatbox"
+		 class="ai-chat-card"
+		 aria-labelledby="ai-chat-title">
+
 	<div class="ai-chat-heading">
+
 		<div>
-			<h2 id="ai-chat-title" class="section-title">✨ AI trợ lý quản trị</h2>
-			<p>Đặt câu hỏi về dữ liệu đơn hàng, sản phẩm và người dùng.</p>
+			<h2 id="ai-chat-title" class="section-title">
+				✨ AI trợ lý quản trị
+			</h2>
+
+			<p>
+				Đặt câu hỏi về dữ liệu đơn hàng,
+				sản phẩm và người dùng.
+			</p>
 		</div>
-		<span class="ai-chat-badge">READ ONLY</span>
+
+		<span class="ai-chat-badge">
+            READ ONLY
+        </span>
+
 	</div>
 
-	<div id="ai-chat-messages" class="ai-chat-messages" aria-live="polite" aria-relevant="additions text">
-		<p class="ai-chat-empty">Ví dụ: “Có bao nhiêu đơn hàng đang giao?” hoặc “Top 10 sản phẩm bán chạy”.</p>
+	<div id="ai-chat-messages"
+		 class="ai-chat-messages"
+		 aria-live="polite"
+		 aria-relevant="additions text">
+
+		<p class="ai-chat-empty">
+			Ví dụ:
+			“Có bao nhiêu đơn hàng đang giao?”
+			hoặc
+			“Top 10 sản phẩm bán chạy”.
+		</p>
+
 	</div>
 
-	<form id="ai-chat-form" class="ai-chat-form">
-		<label class="ai-chat-sr-only" for="ai-chat-question">Câu hỏi cho AI</label>
-		<textarea id="ai-chat-question" name="question" maxlength="1000" rows="2"
-							placeholder="Nhập câu hỏi về dữ liệu quản trị…" required></textarea>
+	<form id="ai-chat-form"
+		  class="ai-chat-form">
+
+		<label class="ai-chat-sr-only"
+			   for="ai-chat-question">
+			Câu hỏi cho AI
+		</label>
+
+		<textarea
+				id="ai-chat-question"
+				name="question"
+				maxlength="1000"
+				rows="2"
+				placeholder="Nhập câu hỏi về dữ liệu quản trị…"
+				required></textarea>
+
 		<div class="ai-chat-actions">
-			<span id="ai-chat-status" class="ai-chat-status" role="status">Không lưu lịch sử sau khi tải lại trang.</span>
-			<button id="ai-chat-submit" type="submit">Gửi câu hỏi <span aria-hidden="true">➤</span></button>
+
+            <span id="ai-chat-status"
+				  class="ai-chat-status"
+				  role="status">
+                READ ONLY — không thay đổi dữ liệu.
+            </span>
+
+			<button
+					id="ai-chat-submit"
+					type="submit">
+
+				Gửi câu hỏi
+				<span aria-hidden="true">➤</span>
+
+			</button>
+
 		</div>
+
 	</form>
+
 </section>

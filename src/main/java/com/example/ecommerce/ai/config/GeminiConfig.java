@@ -8,7 +8,12 @@ import org.springframework.web.client.RestClient;
 public class GeminiConfig {
 
 	@Bean
-	RestClient geminiRestClient(RestClient.Builder builder) {
+	public RestClient.Builder restClientBuilder() {
+		return RestClient.builder();
+	}
+
+	@Bean
+	public RestClient geminiRestClient(RestClient.Builder builder) {
 		return builder
 				.baseUrl("https://generativelanguage.googleapis.com")
 				.build();

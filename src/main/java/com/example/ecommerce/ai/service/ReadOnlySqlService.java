@@ -13,43 +13,86 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/** Executes queries only; no write-oriented JDBC methods are exposed here. */
 @Service
 @RequiredArgsConstructor
 public class ReadOnlySqlService {
 
 	private static final int MAX_ROWS = 100;
+
 	private final JdbcTemplate jdbcTemplate;
 
 	@Transactional(readOnly = true, timeout = 15)
 	public SqlQueryResult executeSelect(String validatedSql) {
-		List<Map<String, Object>> rows = jdbcTemplate.query(
-				validatedSql,
-				statement -> {
-					statement.setQueryTimeout(12);
-					statement.setMaxRows(MAX_ROWS);
-					statement.setFetchSize(MAX_ROWS);
-				},
-				resultSet -> {
-					ResultSetMetaData metadata = resultSet.getMetaData();
-					int columns = metadata.getColumnCount();
-					List<Map<String, Object>> result = new ArrayList<>();
-					while (resultSet.next() && result.size() < MAX_ROWS) {
-						Map<String, Object> row = new LinkedHashMap<>();
-						for (int column = 1; column <= columns; column++) {
-							String name = metadata.getColumnLabel(column);
-							String safeName = name.toLowerCase(Locale.ROOT);
-							if (safeName.contains("password") || safeName.contains("otp")
-									|| safeName.contains("secret") || safeName.contains("token")) {
-								continue;
+
+		List<Map<String, Object>> rows =
+				jdbcTemplate.query(
+						validatedSql,
+
+						statement -> {
+							statement.setQueryTimeout(12);
+							statement.setMaxRows(MAX_ROWS);
+							statement.setFetchSize(MAX_ROWS);
+						},
+
+						resultSet -> {
+
+							ResultSetMetaData metadata =
+									resultSet.getMetaData();
+
+							int columnCount =
+									metadata.getColumnCount();
+
+							List<Map<String, Object>> result =
+									new ArrayList<>();
+
+							while (
+									resultSet.next()
+											&& result.size() < MAX_ROWS
+							) {
+
+								Map<String, Object> row =
+										new LinkedHashMap<>();
+
+								for (
+										int column = 1;
+										column <= columnCount;
+										column++
+								) {
+
+									String columnName =
+											metadata.getColumnLabel(column);
+
+									String safeName =
+											columnName
+													.toLowerCase(
+															Locale.ROOT
+													);
+
+									/*
+									 * Defense-in-depth.
+									 */
+									if (
+											safeName.contains("password")
+													|| safeName.contains("otp")
+													|| safeName.contains("secret")
+													|| safeName.contains("token")
+									) {
+										continue;
+									}
+
+									row.put(
+											columnName,
+											resultSet.getObject(column)
+									);
+								}
+
+								result.add(row);
 							}
-							row.put(name, resultSet.getObject(column));
+
+							return result;
 						}
-						result.add(row);
-					}
-					return result;
-				}
-		);
+				);
+
 		return new SqlQueryResult(rows);
 	}
 }

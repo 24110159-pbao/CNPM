@@ -14,103 +14,345 @@ import java.util.regex.Pattern;
 public class SqlValidationService {
 
 	private static final int MAX_LIMIT = 100;
+
 	private static final Set<String> ALLOWED_TABLES = Set.of(
-			"users", "categories", "products", "product_specs", "carts",
-			"cart_items", "orders", "order_items", "payments", "discount_codes",
-			"reviews", "notifications"
+			"users",
+			"categories",
+			"products",
+			"product_specs",
+			"carts",
+			"cart_items",
+			"orders",
+			"order_items",
+			"payments",
+			"discount_codes",
+			"reviews",
+			"notifications"
 	);
+
 	private static final Pattern SOURCE_PATTERN = Pattern.compile(
-			"(?i)\\b(?:FROM|JOIN)\\s+([`\\w.]+)(?:\\s+(?:AS\\s+)?([a-zA-Z_][\\w]*))?"
+			"(?i)\\b(?:FROM|JOIN)\\s+([`\\w.]+)"
 	);
+
 	private static final Pattern LIMIT_PATTERN = Pattern.compile(
-			"(?i)\\bLIMIT\\s+(\\d+)(?:\\s*,\\s*(\\d+))?(?:\\s+OFFSET\\s+(\\d+))?\\b"
+			"(?i)\\bLIMIT\\s+(\\d+)(?:\\s*,\\s*(\\d+))?\\b"
 	);
+
 	private static final Pattern BLOCKED_PATTERN = Pattern.compile(
-			"(?i)\\b(UNION|INTO|OUTFILE|DUMPFILE|PROCEDURE|EXEC|EXECUTE|CALL|" +
-					"INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|GRANT|REVOKE|" +
-					"SLEEP|BENCHMARK|LOAD_FILE|GET_LOCK|RELEASE_LOCK|IS_FREE_LOCK|" +
-					"IS_USED_LOCK|INFORMATION_SCHEMA|PERFORMANCE_SCHEMA|SYS|MYSQL|" +
-					"PASSWORD|PASSWORD_HASH|OTP|SECRET|API_KEY|TOKEN|LOCK)\\b"
+			"(?i)\\b(" +
+					"UNION|" +
+					"INTO|" +
+					"OUTFILE|" +
+					"DUMPFILE|" +
+					"PROCEDURE|" +
+					"EXEC|" +
+					"EXECUTE|" +
+					"CALL|" +
+					"INSERT|" +
+					"UPDATE|" +
+					"DELETE|" +
+					"DROP|" +
+					"ALTER|" +
+					"TRUNCATE|" +
+					"CREATE|" +
+					"GRANT|" +
+					"REVOKE|" +
+					"SLEEP|" +
+					"BENCHMARK|" +
+					"LOAD_FILE|" +
+					"GET_LOCK|" +
+					"RELEASE_LOCK|" +
+					"IS_FREE_LOCK|" +
+					"IS_USED_LOCK|" +
+					"INFORMATION_SCHEMA|" +
+					"PERFORMANCE_SCHEMA|" +
+					"SYS|" +
+					"MYSQL|" +
+					"PASSWORD|" +
+					"PASSWORD_HASH|" +
+					"OTP|" +
+					"SECRET|" +
+					"API_KEY|" +
+					"TOKEN|" +
+					"LOCK" +
+					")\\b"
 	);
 
 	public String validate(String sql) {
-		if (sql == null || sql.isBlank() || sql.length() > 10_000) {
-			throw new IllegalArgumentException("empty or oversized SQL");
+
+		if (sql == null || sql.isBlank()) {
+			throw new IllegalArgumentException("SQL is empty.");
+		}
+
+		if (sql.length() > 10_000) {
+			throw new IllegalArgumentException("SQL is too long.");
 		}
 
 		String normalized = sql.trim();
-		if (!normalized.regionMatches(true, 0, "SELECT", 0, 6)
-				|| (normalized.length() > 6 && Character.isLetterOrDigit(normalized.charAt(6)))) {
-			throw new IllegalArgumentException("only SELECT is allowed");
+
+		/*
+		 * Only SELECT may be the first statement.
+		 */
+		if (!normalized.regionMatches(
+				true,
+				0,
+				"SELECT",
+				0,
+				6
+		)) {
+			throw new IllegalArgumentException(
+					"Only SELECT is allowed."
+			);
 		}
 
-		if (normalized.contains(";") || normalized.contains("--") || normalized.contains("#")
-				|| normalized.contains("/*") || normalized.contains("*/")
-			|| normalized.contains("@")) {
-			throw new IllegalArgumentException("comments, variables and multiple statements are not allowed");
+		/*
+		 * SELECTABC is not SELECT.
+		 */
+		if (normalized.length() > 6
+				&& Character.isLetterOrDigit(normalized.charAt(6))) {
+
+			throw new IllegalArgumentException(
+					"Only SELECT is allowed."
+			);
+		}
+
+		/*
+		 * No semicolon.
+		 * Therefore multi-statement is impossible.
+		 */
+		if (normalized.contains(";")) {
+			throw new IllegalArgumentException(
+					"Multiple statements are not allowed."
+			);
+		}
+
+		/*
+		 * No SQL comments.
+		 */
+		if (normalized.contains("--")
+				|| normalized.contains("#")
+				|| normalized.contains("/*")
+				|| normalized.contains("*/")) {
+
+			throw new IllegalArgumentException(
+					"SQL comments are not allowed."
+			);
+		}
+
+		/*
+		 * No MySQL variables.
+		 */
+		if (normalized.contains("@")) {
+			throw new IllegalArgumentException(
+					"SQL variables are not allowed."
+			);
 		}
 
 		String lower = normalized.toLowerCase(Locale.ROOT);
-		if (BLOCKED_PATTERN.matcher(lower).find() || lower.contains(":=")) {
-			throw new IllegalArgumentException("unsafe SQL token");
+
+		/*
+		 * Block dangerous operations and sensitive sources.
+		 */
+		if (BLOCKED_PATTERN.matcher(lower).find()) {
+			throw new IllegalArgumentException(
+					"Unsafe SQL token."
+			);
 		}
 
-		// Reject SELECT * but allow aggregate forms such as COUNT(*).
-		String withoutCountStar = lower.replaceAll("(?i)count\\s*\\(\\s*\\*\\s*\\)", "count(1)");
-		if (Pattern.compile("(?i)(^select\\s+\\*|,\\s*\\*|\\b[a-z_][\\w]*\\.\\*)")
-				.matcher(withoutCountStar).find()) {
-			throw new IllegalArgumentException("select only the columns needed");
+		/*
+		 * MySQL assignment operator.
+		 */
+		if (lower.contains(":=")) {
+			throw new IllegalArgumentException(
+					"SQL assignment is not allowed."
+			);
 		}
 
+		/*
+		 * SELECT * is forbidden.
+		 *
+		 * COUNT(*) is allowed.
+		 */
+		String withoutCountStar = lower.replaceAll(
+				"count\\s*\\(\\s*\\*\\s*\\)",
+				"count(1)"
+		);
+
+		Pattern selectStarPattern = Pattern.compile(
+				"(?i)" +
+						"(^SELECT\\s+\\*)" +
+						"|(,\\s*\\*)" +
+						"|(\\b[a-z_][\\w]*\\.\\*)"
+		);
+
+		if (selectStarPattern
+				.matcher(withoutCountStar)
+				.find()) {
+
+			throw new IllegalArgumentException(
+					"SELECT * is not allowed."
+			);
+		}
+
+		/*
+		 * Validate tables.
+		 */
 		validateTables(normalized);
+
+		/*
+		 * Every query must have LIMIT.
+		 */
 		validateLimit(normalized);
 
+		/*
+		 * Parse SQL structurally.
+		 */
 		try {
-			Statement statement = CCJSqlParserUtil.parse(normalized);
+
+			Statement statement =
+					CCJSqlParserUtil.parse(normalized);
+
 			if (!(statement instanceof Select)) {
-				throw new IllegalArgumentException("only SELECT is allowed");
+				throw new IllegalArgumentException(
+						"Only SELECT is allowed."
+				);
 			}
+
 		} catch (IllegalArgumentException exception) {
+
 			throw exception;
+
 		} catch (Exception exception) {
-			throw new IllegalArgumentException("invalid SQL syntax", exception);
+
+			throw new IllegalArgumentException(
+					"Invalid SQL syntax.",
+					exception
+			);
 		}
+
 		return normalized;
 	}
 
 	private void validateTables(String sql) {
-		Matcher matcher = SOURCE_PATTERN.matcher(sql);
-		boolean foundSource = false;
+
+		Matcher matcher =
+				SOURCE_PATTERN.matcher(sql);
+
+		boolean foundTable = false;
+
 		while (matcher.find()) {
-			foundSource = true;
-			String table = matcher.group(1).replace("`", "").toLowerCase(Locale.ROOT);
-			if (table.contains(".") || !ALLOWED_TABLES.contains(table)) {
-				throw new IllegalArgumentException("table is not available to AI queries");
+
+			foundTable = true;
+
+			String table = matcher
+					.group(1)
+					.replace("`", "")
+					.toLowerCase(Locale.ROOT);
+
+			/*
+			 * Prevent:
+			 *
+			 * database.users
+			 * other_schema.users
+			 */
+			if (table.contains(".")) {
+				throw new IllegalArgumentException(
+						"Schema-qualified tables are not allowed."
+				);
+			}
+
+			if (!ALLOWED_TABLES.contains(table)) {
+				throw new IllegalArgumentException(
+						"Table is not available to AI queries."
+				);
 			}
 		}
-		if (!foundSource) {
-			throw new IllegalArgumentException("query must read an approved table");
+
+		if (!foundTable) {
+			throw new IllegalArgumentException(
+					"Query must read an approved table."
+			);
 		}
-		if (Pattern.compile("(?i)\\bFROM\\s*\\(|\\bJOIN\\s*\\(").matcher(sql).find()) {
-			throw new IllegalArgumentException("derived tables are not allowed");
+
+		/*
+		 * Derived tables/subqueries in FROM/JOIN
+		 * are intentionally rejected to keep the
+		 * security model simple.
+		 */
+		if (Pattern.compile(
+				"(?i)\\bFROM\\s*\\("
+		).matcher(sql).find()) {
+
+			throw new IllegalArgumentException(
+					"Derived tables are not allowed."
+			);
 		}
-		if (Pattern.compile("(?i)\\bFROM\\s+[\\w`]+(?:\\s+(?:AS\\s+)?[\\w]+)?\\s*,\\s*[\\w`]+")
-				.matcher(sql).find()) {
-			throw new IllegalArgumentException("comma joins are not allowed");
+
+		if (Pattern.compile(
+				"(?i)\\bJOIN\\s*\\("
+		).matcher(sql).find()) {
+
+			throw new IllegalArgumentException(
+					"Derived tables are not allowed."
+			);
+		}
+
+		/*
+		 * Comma joins are rejected.
+		 */
+		if (Pattern.compile(
+				"(?i)\\bFROM\\s+[\\w`]+\\s*,"
+		).matcher(sql).find()) {
+
+			throw new IllegalArgumentException(
+					"Comma joins are not allowed."
+			);
 		}
 	}
 
 	private void validateLimit(String sql) {
-		Matcher matcher = LIMIT_PATTERN.matcher(sql);
+
+		Matcher matcher =
+				LIMIT_PATTERN.matcher(sql);
+
 		if (!matcher.find()) {
-			throw new IllegalArgumentException("LIMIT is required");
+
+			throw new IllegalArgumentException(
+					"LIMIT is required."
+			);
 		}
-		String requestedRows = matcher.group(2) != null ? matcher.group(2) : matcher.group(1);
-		if (Integer.parseInt(requestedRows) > MAX_LIMIT) {
-			throw new IllegalArgumentException("LIMIT exceeds the maximum row count");
+
+		int rowCount;
+
+		if (matcher.group(2) != null) {
+
+			/*
+			 * LIMIT offset, row_count
+			 */
+			rowCount =
+					Integer.parseInt(matcher.group(2));
+
+		} else {
+
+			rowCount =
+					Integer.parseInt(matcher.group(1));
 		}
+
+		if (rowCount <= 0 || rowCount > MAX_LIMIT) {
+
+			throw new IllegalArgumentException(
+					"LIMIT must be between 1 and 100."
+			);
+		}
+
+		/*
+		 * Only one LIMIT.
+		 */
 		if (matcher.find()) {
-			throw new IllegalArgumentException("multiple LIMIT clauses are not allowed");
+
+			throw new IllegalArgumentException(
+					"Multiple LIMIT clauses are not allowed."
+			);
 		}
 	}
 }
