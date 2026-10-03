@@ -1,0 +1,742 @@
+Tôi đã có một project Spring Boot Ecommerce hoàn chỉnh bằng Java 21 theo kiến trúc MVC:
+Browser → Thymeleaf → Controller → Service → Repository → MySQL
+Project hiện tại đã có Entity, Repository, Service, Controller, Spring Security, Thymeleaf và database MySQL.
+Bây giờ tôi muốn BỔ SUNG AI CHATBOX CHO MANAGER.
+KHÔNG xây lại project.
+ KHÔNG thay đổi kiến trúc hiện tại.
+ KHÔNG chuyển frontend sang React/Vue/Angular.
+ KHÔNG tạo REST API riêng cho toàn bộ frontend.
+ Chỉ bổ sung module AI vào project hiện tại.
+1. Mục tiêu
+Manager có thể hỏi AI các câu hỏi liên quan đến dữ liệu trong hệ thống.
+Ví dụ:
+"Có bao nhiêu User?"
+
+
+"Có bao nhiêu đơn hàng trong tháng này?"
+
+
+"Top 10 sản phẩm bán chạy nhất tháng 9?"
+
+
+"Doanh thu tháng 9 là bao nhiêu?"
+
+
+"Có bao nhiêu đơn hàng đang SHIPPING?"
+
+
+"User nào có tổng tiền mua hàng cao nhất?"
+
+
+"Có sản phẩm nào tồn kho dưới 5?"
+
+
+"Doanh thu của danh mục Laptop trong quý 3?"
+
+
+"Các đơn hàng DELIVERED trong tháng 9 có tổng doanh thu bao nhiêu?"
+
+
+AI được phép TỰ SINH SQL để truy vấn dữ liệu.
+Tuy nhiên AI CHỈ ĐƯỢC PHÉP ĐỌC DATABASE.
+2. Quy tắc bảo mật bắt buộc
+AI TUYỆT ĐỐI KHÔNG được:
+INSERT
+
+
+UPDATE
+
+
+DELETE
+
+
+DROP
+
+
+ALTER
+
+
+TRUNCATE
+
+
+CREATE
+
+
+GRANT
+
+
+REVOKE
+
+
+CALL procedure
+
+
+EXEC
+
+
+thay đổi schema
+
+
+thay đổi database
+
+
+thay đổi Entity
+
+
+thay đổi dữ liệu
+
+
+Chỉ cho phép:
+SELECT
+Nếu AI sinh ra query không phải SELECT thì phải từ chối thực thi.
+Không được sử dụng multi-statement.
+Không được thực thi:
+SELECT ...; DELETE ...
+Không được cho AI quyền truy cập trực tiếp JDBC connection tùy ý.
+Phải có một lớp kiểm tra SQL trước khi thực thi.
+3. Luồng dữ liệu bắt buộc
+Thiết kế theo luồng:
+Manager
+ ↓
+ Thymeleaf AI Chatbox
+ ↓
+ AdminAiController
+ ↓
+ AdminAiService
+ ↓
+ AI Model
+ ↓
+ AI sinh SQL
+ ↓
+ SqlValidationService
+ ↓
+ ReadOnlySqlService
+ ↓
+ MySQL
+ ↓
+ Query Result
+ ↓
+ AI Model
+ ↓
+ Câu trả lời tự nhiên
+ ↓
+ Thymeleaf Chatbox
+AI KHÔNG được bypass lớp validation.
+4. Database schema
+AI chỉ được sinh SQL dựa trên Entity/database schema thực tế của project.
+Các Entity chính:
+User
+ Product
+ Category
+ Cart
+ CartItem
+ Order
+ OrderItem
+ DiscountCode
+ Payment
+ Review
+ OtpVerification
+ Notification
+Các Enum:
+Role
+ OrderStatus
+ PaymentMethod
+ PaymentStatus
+ OtpType
+ NotificationType
+Không tự tạo Entity mới.
+Không tự thêm bảng mới.
+Không tự thêm field mới.
+Không tự đoán field không tồn tại.
+Nếu không đủ thông tin schema để trả lời câu hỏi thì phải nói rằng không thể xác định, KHÔNG được bịa dữ liệu.
+5. Các quy tắc dữ liệu quan trọng
+User:
+email UNIQUE
+
+
+role dùng Enum Role
+
+
+password BCrypt
+
+
+address nằm trực tiếp trong users
+
+
+không có user_addresses
+
+
+Product:
+category_id
+
+
+name
+
+
+description
+
+
+price
+
+
+stock
+
+
+image_url
+
+
+status là boolean
+
+
+created_at
+
+
+không có product_images
+
+
+Order:
+user_id
+
+
+recipient_name
+
+
+recipient_phone
+
+
+shipping_address
+
+
+total_amount
+
+
+discount_amount
+
+
+final_amount
+
+
+status
+
+
+created_at
+
+
+Order lưu snapshot thông tin giao hàng.
+OrderItem lưu price snapshot tại thời điểm mua.
+OrderStatus:
+PENDING
+ CONFIRMED
+ SHIPPING
+ DELIVERED
+ CANCELLED
+ RETURN_REQUESTED
+ REFUNDED
+Payment:
+order_id
+
+
+method
+
+
+status
+
+
+transaction_no
+
+
+paid_at
+
+
+created_at
+
+
+PaymentMethod:
+COD
+ VNPAY
+PaymentStatus:
+PENDING
+ PAID
+ FAILED
+ REFUNDED
+DiscountCode:
+code
+
+
+discount_value
+
+
+quantity
+
+
+start_at
+
+
+end_at
+
+
+Discount chỉ giảm theo phần trăm.
+Mỗi Order chỉ dùng tối đa một DiscountCode.
+Không có discount_usages.
+Review:
+user_id
+
+
+product_id
+
+
+order_id
+
+
+rating
+
+
+comment
+
+
+created_at
+
+
+UNIQUE(user_id, product_id, order_id).
+Review chỉ hợp lệ khi User đã mua Product và Order ở trạng thái DELIVERED.
+6. Quy tắc SQL
+SQL phải tương thích với MySQL.
+Chỉ sinh SELECT.
+Không sử dụng SELECT * nếu không cần thiết.
+Chỉ lấy các column cần thiết để trả lời câu hỏi.
+Không lấy password.
+Không lấy password_hash hoặc BCrypt password.
+Không lấy OTP.
+Không lấy secret key.
+Không lấy Cloudinary API secret.
+Không lấy VNPay secret.
+Không lấy API key.
+Không trả dữ liệu nhạy cảm không cần thiết.
+Khi truy vấn User, ưu tiên:
+id
+ name
+ email
+ phone
+ created_at
+Không lấy password.
+Khi truy vấn Order, chỉ lấy các field cần thiết.
+Khi truy vấn doanh thu, phải xác định rõ trạng thái đơn hàng được tính.
+Nếu câu hỏi là "doanh thu thực tế" thì ưu tiên chỉ tính Order có status = DELIVERED, trừ khi Manager nói rõ phạm vi khác.
+Không tự suy diễn nếu business rule chưa đủ rõ.
+7. Quy tắc thời gian
+Nếu Manager nói:
+"tháng 9"
+hãy hiểu là tháng 9 của năm hiện tại nếu context có ngày hiện tại.
+Nếu Manager nói:
+"tháng này"
+hãy sử dụng tháng hiện tại.
+Nếu Manager nói:
+"quý 3"
+hãy xác định khoảng thời gian tương ứng.
+Nếu thời gian không rõ và ảnh hưởng đến kết quả, hỏi lại Manager.
+Không tự bịa khoảng thời gian.
+8. Pagination / giới hạn dữ liệu
+Không trả về hàng trăm nghìn record cho AI.
+Các query dạng danh sách phải có LIMIT hợp lý.
+Ví dụ:
+LIMIT 20
+Nếu Manager yêu cầu Top 10:
+LIMIT 10.
+Nếu Manager yêu cầu danh sách lớn hơn, xử lý giới hạn phù hợp.
+Không dùng query không giới hạn đối với bảng lớn.
+9. SQL Validation
+Tạo:
+SqlValidationService
+Service này phải kiểm tra SQL trước khi chạy.
+Các kiểm tra tối thiểu:
+SQL không được null/rỗng.
+
+
+Chỉ cho phép statement SELECT.
+
+
+Không được có nhiều statement.
+
+
+Không được chứa INSERT.
+
+
+Không được chứa UPDATE.
+
+
+Không được chứa DELETE.
+
+
+Không được chứa DROP.
+
+
+Không được chứa ALTER.
+
+
+Không được chứa TRUNCATE.
+
+
+Không được chứa CREATE.
+
+
+Không được chứa GRANT.
+
+
+Không được chứa REVOKE.
+
+
+Không được chứa EXEC.
+
+
+Không được gọi stored procedure.
+
+
+Không được truy cập schema/database khác.
+
+
+Không được sử dụng comment để bypass validation.
+
+
+Không được phép UNION để bypass giới hạn bảo mật nếu không cần thiết.
+
+
+Query phải có giới hạn đối với các truy vấn danh sách.
+
+
+Nếu validation fail:
+Không thực thi query.
+Trả về lỗi an toàn cho AdminAiService.
+10. ReadOnlySqlService
+Tạo service riêng:
+ReadOnlySqlService
+Service này chỉ chịu trách nhiệm thực thi SELECT đã được validation.
+Không cho AI truy cập trực tiếp EntityManager hoặc JdbcTemplate.
+Kiến trúc:
+AI
+ ↓
+ SqlValidationService
+ ↓
+ ReadOnlySqlService
+ ↓
+ Database
+Nếu sử dụng JdbcTemplate thì chỉ dùng để execute SELECT đã được validation.
+Không cung cấp phương thức executeUpdate.
+Không cung cấp phương thức save/delete/update cho AI.
+11. Database Schema cho AI
+Không hard-code toàn bộ database schema trong Controller.
+Tạo một thành phần riêng để cung cấp schema/context cho AI.
+Ví dụ:
+DatabaseSchemaProvider
+Nó mô tả:
+table
+
+
+column
+
+
+datatype
+
+
+relationship
+
+
+enum
+
+
+business rule quan trọng
+
+
+AI dùng schema này để sinh SQL.
+Schema phải phản ánh database/entity thực tế của project.
+Không tự thêm table hoặc column.
+12. AI Service
+Tạo:
+AdminAiService
+Nhiệm vụ:
+Nhận câu hỏi của Manager.
+
+
+Gửi câu hỏi + database schema + business rules cho AI.
+
+
+AI tạo SQL.
+
+
+Nhận SQL.
+
+
+Gửi SQL đến SqlValidationService.
+
+
+Nếu không hợp lệ → không thực thi.
+
+
+Nếu hợp lệ → ReadOnlySqlService thực thi.
+
+
+Nhận kết quả query.
+
+
+Gửi kết quả cho AI để AI giải thích.
+
+
+Trả câu trả lời cho Manager.
+
+
+13. AI không được tự ý trả lời khi không có dữ liệu
+Nếu database không có dữ liệu cần thiết:
+AI phải nói rõ:
+"Không đủ dữ liệu để xác định."
+Không được bịa số liệu.
+Không được suy đoán.
+Không được tạo dữ liệu giả.
+Nếu câu hỏi không liên quan database ecommerce:
+AI có thể trả lời rằng chức năng hiện tại chỉ hỗ trợ dữ liệu quản trị của hệ thống ecommerce.
+14. Manager Security
+AI Chatbox chỉ dành cho MANAGER.
+Endpoint AI phải được bảo vệ bởi Spring Security:
+/manager/ai/**
+Chỉ ROLE_MANAGER được truy cập.
+USER và Guest không được truy cập.
+Không được để API key ở frontend.
+AI API key chỉ nằm ở backend/server.
+15. Không cần tạo database mới cho AI
+Không tạo:
+ai_messages
+ ai_conversations
+ ai_queries
+ở version đầu tiên.
+Không tạo Redis.
+Không tạo vector database.
+Không tạo Elasticsearch.
+Không tạo microservice.
+Không tạo Python service.
+Không tạo AI server riêng.
+AI chỉ là module trong Spring Boot hiện tại.
+16. Thymeleaf Chatbox
+Thêm chatbox vào Manager Dashboard hiện tại.
+Có thể dùng JavaScript đơn giản để:
+nhập message
+
+
+gửi message tới /manager/ai/chat
+
+
+nhận response
+
+
+hiển thị response
+
+
+Không dùng React/Vue/Angular.
+Không thay đổi frontend architecture.
+17. DTO
+Không trả Entity trực tiếp cho AI.
+Có thể tạo:
+AiChatRequest
+ AiChatResponse
+ SqlQueryResult
+Nếu cần DTO kết quả khác thì tạo riêng.
+Không expose:
+password
+ OTP
+ API key
+ secret
+ password hash
+18. Logging
+Trong development có thể log:
+câu hỏi Manager
+
+
+SQL AI sinh ra
+
+
+validation result
+
+
+execution time
+
+
+Nhưng tuyệt đối không log:
+password
+
+
+OTP
+
+
+API key
+
+
+secret
+
+
+token nhạy cảm
+
+
+19. Error handling
+Nếu AI sinh SQL sai:
+Không làm application crash.
+Trả lỗi thân thiện:
+"Không thể thực hiện truy vấn này."
+Nếu SQL không hợp lệ:
+"Truy vấn bị từ chối vì không đáp ứng quy tắc READ ONLY."
+Nếu database error:
+"Không thể truy vấn dữ liệu hệ thống lúc này."
+Không hiển thị stack trace cho Manager.
+20. Không tự ý mở rộng scope
+Không thêm:
+MoMo
+ Redis
+ Kafka
+ RabbitMQ
+ Elasticsearch
+ Microservices
+ Product image table
+ User address table
+ Promotion engine
+ REST API riêng cho frontend
+Không thay đổi OrderStatus.
+Không thay đổi PaymentStatus.
+Không thay đổi database design hiện tại.
+Không thay đổi Entity nếu không thực sự cần thiết.
+21. Cách triển khai
+Trước tiên hãy kiểm tra project hiện tại.
+Sau đó:
+Xác định Spring Boot version hiện tại.
+
+
+Kiểm tra Entity và quan hệ.
+
+
+Kiểm tra Repository.
+
+
+Kiểm tra Service.
+
+
+Xác định database schema thực tế.
+
+
+Thêm dependency AI cần thiết.
+
+
+Tạo AI config.
+
+
+Tạo DatabaseSchemaProvider.
+
+
+Tạo SqlValidationService.
+
+
+Tạo ReadOnlySqlService.
+
+
+Tạo AdminAiService.
+
+
+Tạo AdminAiController.
+
+
+Tạo Thymeleaf Chatbox.
+
+
+Test READ-only SQL.
+
+
+Test Security ROLE_MANAGER.
+
+
+Test các câu hỏi thực tế.
+
+
+Không viết lại những phần project hiện tại đã hoạt động.
+22. Test bắt buộc
+Phải test các câu hỏi:
+"Bao nhiêu User?"
+"Bao nhiêu Product?"
+"Bao nhiêu Order?"
+"Doanh thu tháng này?"
+"Bao nhiêu đơn DELIVERED?"
+"Bao nhiêu đơn CANCELLED?"
+"Top 10 sản phẩm bán chạy nhất?"
+"User nào mua nhiều tiền nhất?"
+"Sản phẩm nào tồn kho dưới 5?"
+"Doanh thu Laptop tháng 9?"
+Và test security:
+"DELETE FROM users"
+"UPDATE products SET price = 0"
+"DROP TABLE users"
+"TRUNCATE orders"
+Tất cả query WRITE phải bị từ chối và không được chạy.
+23. Kết quả mong muốn
+Sau khi hoàn thành, kiến trúc phải là:
+Manager
+ ↓
+ Thymeleaf Chatbox
+ ↓
+ AdminAiController
+ ↓
+ AdminAiService
+ ↓
+ AI Model
+ ↓
+ Generated SELECT
+ ↓
+ SqlValidationService
+ ↓
+ ReadOnlySqlService
+ ↓
+ MySQL
+ ↓
+ Query Result
+ ↓
+ AI
+ ↓
+ Natural Language Answer
+ ↓
+ Manager
+Mục tiêu là tạo một AI Admin Chatbox có khả năng tự sinh SELECT SQL linh hoạt nhưng bị giới hạn nghiêm ngặt ở READ ONLY.
+Hãy ưu tiên code đơn giản, dễ hiểu, phù hợp đồ án Spring Boot MVC hiện tại.
+Trước khi sửa code, hãy đọc và phân tích các file hiện tại để tái sử dụng kiến trúc có sẵn. Không tự ý tạo abstraction phức tạp nếu không cần thiết.
+AI dung gemini để đc api free
+ai/
+├── config/
+│   └── GeminiConfig.java
+├── controller/
+│   └── AdminAiController.java
+├── service/
+│   ├── AdminAiService.java
+│   ├── SqlValidationService.java
+│   ├── ReadOnlySqlService.java
+│   └── DatabaseSchemaProvider.java
+├── dto/
+│   ├── AiChatRequest.java
+│   ├── AiChatResponse.java
+│   └── SqlQueryResult.java
+└── config/
+    └── AiConfig.java
+
+vd GeminiConfig.java
+@Service
+public class GeminiService {
+
+    private final RestClient restClient;
+
+    public GeminiService(
+            RestClient.Builder builder,
+            @Value("${gemini.api.key}") String apiKey
+    ) {
+        this.restClient = builder
+                .baseUrl("https://generativelanguage.googleapis.com")
+                .defaultHeader(
+                        "Content-Type",
+                        "application/json"
+                )
+                .defaultHeader(
+                        "x-goog-api-key",
+                        apiKey
+                )
+                .build();
+    }
+}
