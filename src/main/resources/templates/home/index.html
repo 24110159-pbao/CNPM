@@ -1,78 +1,905 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{fragments/header :: header('Trang chủ - E-Commerce')}"></head>
-<body>
+
+<body class="bg-light">
+
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <div th:replace="~{fragments/messages :: messages}"></div>
 
-<div class="container my-4">
-    <!-- Hero Banner -->
-    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
-        <div class="container-fluid py-3">
-            <h1 class="display-6 fw-bold text-primary">Website Mua Sắm Trực Tuyến</h1>
-            <p class="col-md-8 fs-5 text-muted">Hệ thống thương mại điện tử Spring Boot MVC & Thymeleaf. Đáp ứng đầy đủ quy trình từ giỏ hàng, đặt hàng, thanh toán COD/VNPay đến đánh giá sản phẩm.</p>
-            <a th:href="@{/products}" class="btn btn-primary btn-lg">Khám phá sản phẩm ngay</a>
+<style>
+
+    /* =====================================================
+       GLOBAL
+    ===================================================== */
+
+    body {
+        background: #f5f5f5;
+        color: #212529;
+    }
+
+    .container {
+        max-width: 1320px;
+    }
+
+    /* =====================================================
+       HERO
+    ===================================================== */
+
+    .hero-banner {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #0874e9 0%, #0056c9 100%);
+        border-radius: 8px;
+        color: white;
+        padding: 42px 50px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0, 86, 201, 0.18);
+    }
+
+    .hero-banner::before {
+        content: "";
+        position: absolute;
+        width: 320px;
+        height: 320px;
+        right: -100px;
+        top: -150px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .hero-banner::after {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        right: 180px;
+        bottom: -100px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-banner h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .hero-banner p {
+        max-width: 650px;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 22px;
+    }
+
+    .hero-btn {
+        background: #ffd400;
+        color: #212529;
+        border: none;
+        font-weight: 700;
+        padding: 11px 22px;
+        border-radius: 6px;
+        transition: 0.2s;
+    }
+
+    .hero-btn:hover {
+        background: #ffca00;
+        color: #212529;
+        transform: translateY(-2px);
+    }
+
+
+    /* =====================================================
+       CATEGORY
+    ===================================================== */
+
+    .category-section {
+        background: white;
+        border-radius: 8px;
+        padding: 22px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+
+    .section-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #212529;
+        margin: 0;
+    }
+
+    .view-all {
+        color: #0874e9;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .view-all:hover {
+        color: #0056c9;
+        text-decoration: underline;
+    }
+
+    .category-list {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 12px;
+    }
+
+    .category-item {
+        min-height: 78px;
+        background: #fff;
+        border: 1px solid #eeeeee;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 12px;
+        color: #333;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .category-item:hover {
+        color: #0874e9;
+        border-color: #0874e9;
+        background: #f5faff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(8, 116, 233, 0.1);
+    }
+
+
+    /* =====================================================
+       PRODUCT SECTION
+    ===================================================== */
+
+    .product-section {
+        margin-bottom: 30px;
+    }
+
+    .product-section-box {
+        background: white;
+        border-radius: 8px;
+        padding: 22px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+
+    /* =====================================================
+       PRODUCT CARD
+    ===================================================== */
+
+    .product-card {
+        height: 100%;
+        position: relative;
+        background: white;
+        border: 1px solid #eeeeee;
+        border-radius: 7px;
+        overflow: hidden;
+        transition: all 0.2s ease;
+    }
+
+    .product-card:hover {
+        transform: translateY(-4px);
+        border-color: #d5d5d5;
+        box-shadow: 0 7px 20px rgba(0, 0, 0, 0.1);
+    }
+
+
+    /* =====================================================
+       PRODUCT IMAGE
+    ===================================================== */
+
+    .product-image-wrapper {
+        position: relative;
+        height: 245px;
+        background: #fff;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-image {
+        width: 100%;
+        height: 100%;
+        padding: 12px;
+        object-fit: contain;
+        transition: transform 0.25s ease;
+    }
+
+    .product-card:hover .product-image {
+        transform: scale(1.04);
+    }
+
+    .no-image {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f7f7f7;
+        color: #999;
+        font-size: 0.9rem;
+    }
+
+
+    /* =====================================================
+       BADGE
+    ===================================================== */
+
+    .product-badge {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        z-index: 3;
+        background: #e71919;
+        color: white;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 5px 8px;
+        border-radius: 4px;
+    }
+
+
+    /* =====================================================
+       PRODUCT CONTENT
+    ===================================================== */
+
+    .product-content {
+        padding: 14px;
+    }
+
+    .product-name {
+        height: 44px;
+        font-size: 0.98rem;
+        line-height: 1.4;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 7px;
+    }
+
+    .product-name:hover {
+        color: #0874e9;
+    }
+
+    .product-price {
+        color: #d70018;
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .product-stock {
+        color: #666;
+        font-size: 0.8rem;
+        margin-bottom: 8px;
+    }
+
+    .product-stock strong {
+        color: #198754;
+    }
+
+
+    /* =====================================================
+       PRODUCT INFO
+    ===================================================== */
+
+    .product-info {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+    }
+
+    .product-info-item {
+        background: #f5f5f5;
+        color: #666;
+        border-radius: 4px;
+        padding: 4px 7px;
+        font-size: 0.72rem;
+    }
+
+
+    /* =====================================================
+       BUTTON
+    ===================================================== */
+
+    .product-btn {
+        width: 100%;
+        border-radius: 5px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        padding: 9px 10px;
+        transition: 0.2s;
+    }
+
+    .product-btn-primary {
+        background: #0874e9;
+        color: white;
+        border: 1px solid #0874e9;
+    }
+
+    .product-btn-primary:hover {
+        background: #0056c9;
+        border-color: #0056c9;
+        color: white;
+    }
+
+    .product-btn-outline {
+        background: white;
+        color: #0874e9;
+        border: 1px solid #0874e9;
+    }
+
+    .product-btn-outline:hover {
+        background: #0874e9;
+        color: white;
+    }
+
+
+    /* =====================================================
+       SERVICE BAR
+    ===================================================== */
+
+    .service-bar {
+        background: white;
+        border-radius: 8px;
+        padding: 18px;
+        margin-bottom: 25px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .service-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+    }
+
+    .service-icon {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: #eaf4ff;
+        color: #0874e9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+
+    .service-title {
+        font-size: 0.86rem;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .service-text {
+        font-size: 0.72rem;
+        color: #777;
+    }
+
+
+    /* =====================================================
+       RESPONSIVE
+    ===================================================== */
+
+    @media (max-width: 992px) {
+
+        .category-list {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .service-bar {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+    }
+
+
+    @media (max-width: 768px) {
+
+        .hero-banner {
+            padding: 30px 25px;
+        }
+
+        .hero-banner h1 {
+            font-size: 1.7rem;
+        }
+
+        .category-list {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .product-image-wrapper {
+            height: 220px;
+        }
+
+        .product-content {
+            padding: 11px;
+        }
+
+    }
+
+
+    @media (max-width: 576px) {
+
+        .category-list {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .service-bar {
+            grid-template-columns: 1fr;
+        }
+
+        .product-image-wrapper {
+            height: 190px;
+        }
+
+    }
+
+</style>
+
+
+<div class="container py-4">
+
+
+    <!-- =====================================================
+         HERO
+    ===================================================== -->
+
+    <div class="hero-banner">
+
+        <div class="hero-content">
+
+            <h1>🛒 Mua sắm dễ dàng - Giá tốt mỗi ngày</h1>
+
+            <p class="fs-5">
+                Khám phá hàng ngàn sản phẩm điện tử, điện máy và gia dụng
+                chính hãng với mức giá hấp dẫn.
+            </p>
+
+            <a th:href="@{/products}"
+               class="btn hero-btn">
+
+                Xem tất cả sản phẩm
+                <span class="ms-1">→</span>
+
+            </a>
+
         </div>
+
     </div>
 
-    <!-- Danh mục -->
-    <div class="mb-5">
-        <h3 class="border-bottom pb-2 mb-3">📁 Danh mục sản phẩm</h3>
-        <div class="row row-cols-2 row-cols-md-4 g-3">
-            <div class="col" th:each="category : ${categories}">
-                <div class="card h-100 text-center p-3 shadow-sm">
-                    <h5 class="card-title" th:text="${category.name}">Tên danh mục</h5>
-                    <a th:href="@{/categories/{id}(id=${category.id})}" class="btn btn-sm btn-outline-primary mt-2">Xem sản phẩm</a>
+
+    <!-- =====================================================
+         SERVICE BAR
+    ===================================================== -->
+
+    <div class="service-bar">
+
+        <div class="service-item">
+
+            <div class="service-icon">
+                🚚
+            </div>
+
+            <div>
+                <div class="service-title">
+                    Giao hàng tận nơi
+                </div>
+
+                <div class="service-text">
+                    Giao hàng nhanh chóng
                 </div>
             </div>
+
         </div>
-        <p th:if="${#lists.isEmpty(categories)}" class="text-muted">Chưa có danh mục nào.</p>
+
+
+        <div class="service-item">
+
+            <div class="service-icon">
+                🛡️
+            </div>
+
+            <div>
+                <div class="service-title">
+                    Sản phẩm chính hãng
+                </div>
+
+                <div class="service-text">
+                    Cam kết nguồn gốc
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="service-item">
+
+            <div class="service-icon">
+                🔄
+            </div>
+
+            <div>
+                <div class="service-title">
+                    Đổi trả dễ dàng
+                </div>
+
+                <div class="service-text">
+                    Hỗ trợ đổi trả
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="service-item">
+
+            <div class="service-icon">
+                💬
+            </div>
+
+            <div>
+                <div class="service-title">
+                    Hỗ trợ khách hàng
+                </div>
+
+                <div class="service-text">
+                    Tư vấn nhanh chóng
+                </div>
+            </div>
+
+        </div>
+
     </div>
 
-    <!-- Sản phẩm mới nhất -->
-    <div class="mb-5">
-        <h3 class="border-bottom pb-2 mb-3">✨ Sản phẩm mới nhất</h3>
-        <div class="row row-cols-1 row-cols-md-4 g-4">
-            <div class="col" th:each="product : ${newProducts}">
-                <div class="card h-100 shadow-sm">
-                    <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}" th:src="${product.imageUrl}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product image">
-                    <div th:unless="${product.imageUrl != null and !product.imageUrl.isEmpty()}" class="bg-secondary text-white text-center py-5">Chưa có ảnh</div>
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title text-truncate" th:text="${product.name}">Tên sản phẩm</h5>
-                        <p class="card-text text-danger fw-bold fs-5 mb-1" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}">0 ₫</p>
-                        <p class="card-text text-muted small mb-3" th:text="'Kho: ' + ${product.stock}"></p>
-                        <div class="mt-auto">
-                            <a th:href="@{/products/{id}(id=${product.id})}" class="btn btn-sm btn-primary w-100">Chi tiết & Đặt mua</a>
+
+    <!-- =====================================================
+         CATEGORY
+    ===================================================== -->
+
+    <div class="category-section">
+
+        <div class="section-header">
+
+            <h3 class="section-title">
+                Danh mục sản phẩm
+            </h3>
+
+            <a th:href="@{/products}"
+               class="view-all">
+                Xem tất cả →
+            </a>
+
+        </div>
+
+
+        <div class="category-list">
+
+            <a th:each="category : ${categories}"
+               th:href="@{/categories/{id}(id=${category.id})}"
+               class="category-item">
+
+                <span th:text="${category.name}">
+                    Tên danh mục
+                </span>
+
+            </a>
+
+        </div>
+
+
+        <p th:if="${#lists.isEmpty(categories)}"
+           class="text-muted mt-3 mb-0">
+
+            Chưa có danh mục nào.
+
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         NEW PRODUCTS
+    ===================================================== -->
+
+    <div class="product-section">
+
+        <div class="product-section-box">
+
+            <div class="section-header">
+
+                <h3 class="section-title">
+                    ⭐ Sản phẩm mới nhất
+                </h3>
+
+                <a th:href="@{/products}"
+                   class="view-all">
+                    Xem tất cả →
+                </a>
+
+            </div>
+
+
+            <div class="row row-cols-2 row-cols-md-4 g-3">
+
+                <div class="col"
+                     th:each="product : ${newProducts}">
+
+                    <div class="product-card">
+
+
+                        <!-- IMAGE -->
+
+                        <div class="product-image-wrapper">
+
+                            <span class="product-badge">
+                                MỚI
+                            </span>
+
+
+                            <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}"
+                                 th:src="${product.imageUrl}"
+                                 th:alt="${product.name}"
+                                 class="product-image">
+
+
+                            <div th:unless="${product.imageUrl != null and !product.imageUrl.isEmpty()}"
+                                 class="no-image">
+
+                                Chưa có ảnh
+
+                            </div>
+
                         </div>
+
+
+                        <!-- CONTENT -->
+
+                        <div class="product-content">
+
+
+                            <h5 class="product-name"
+                                th:text="${product.name}">
+
+                                Tên sản phẩm
+
+                            </h5>
+
+
+                            <div class="product-price"
+                                 th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}">
+
+                                0 ₫
+
+                            </div>
+
+
+                            <div class="product-stock">
+
+                                <span th:if="${product.stock > 0}">
+                                    Còn
+                                    <strong th:text="${product.stock}">
+                                        0
+                                    </strong>
+                                    sản phẩm
+                                </span>
+
+                                <span th:if="${product.stock <= 0}"
+                                      class="text-danger">
+
+                                    Hết hàng
+
+                                </span>
+
+                            </div>
+
+
+                            <div class="product-info">
+
+                                <span class="product-info-item">
+                                    ✓ Chính hãng
+                                </span>
+
+                                <span class="product-info-item">
+                                    ✓ Bảo hành
+                                </span>
+
+                            </div>
+
+
+                            <a th:href="@{/products/{id}(id=${product.id})}"
+                               class="btn product-btn product-btn-primary">
+
+                                Xem chi tiết
+
+                            </a>
+
+                        </div>
+
                     </div>
+
                 </div>
+
             </div>
+
+
+            <p th:if="${#lists.isEmpty(newProducts)}"
+               class="text-muted mt-3 mb-0">
+
+                Chưa có sản phẩm mới nào.
+
+            </p>
+
         </div>
-        <p th:if="${#lists.isEmpty(newProducts)}" class="text-muted">Chưa có sản phẩm mới nào.</p>
+
     </div>
 
-    <!-- Sản phẩm giá tốt -->
-    <div class="mb-5">
-        <h3 class="border-bottom pb-2 mb-3">🔥 Sản phẩm giá tốt</h3>
-        <div class="row row-cols-1 row-cols-md-4 g-4">
-            <div class="col" th:each="product : ${cheapProducts}">
-                <div class="card h-100 shadow-sm border-warning">
-                    <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}" th:src="${product.imageUrl}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product image">
-                    <div th:unless="${product.imageUrl != null and !product.imageUrl.isEmpty()}" class="bg-secondary text-white text-center py-5">Chưa có ảnh</div>
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title text-truncate" th:text="${product.name}">Tên sản phẩm</h5>
-                        <p class="card-text text-danger fw-bold fs-5 mb-1" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}">0 ₫</p>
-                        <p class="card-text text-muted small mb-3" th:text="'Kho: ' + ${product.stock}"></p>
-                        <div class="mt-auto">
-                            <a th:href="@{/products/{id}(id=${product.id})}" class="btn btn-sm btn-outline-warning text-dark w-100">Chi tiết</a>
-                        </div>
-                    </div>
-                </div>
+
+    <!-- =====================================================
+         CHEAP PRODUCTS
+    ===================================================== -->
+
+    <div class="product-section">
+
+        <div class="product-section-box">
+
+            <div class="section-header">
+
+                <h3 class="section-title">
+                    🔥 Sản phẩm giá tốt
+                </h3>
+
+                <a th:href="@{/products}"
+                   class="view-all">
+
+                    Xem tất cả →
+
+                </a>
+
             </div>
+
+
+            <div class="row row-cols-2 row-cols-md-4 g-3">
+
+                <div class="col"
+                     th:each="product : ${cheapProducts}">
+
+                    <div class="product-card">
+
+
+                        <!-- IMAGE -->
+
+                        <div class="product-image-wrapper">
+
+                            <span class="product-badge">
+                                GIÁ TỐT
+                            </span>
+
+
+                            <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}"
+                                 th:src="${product.imageUrl}"
+                                 th:alt="${product.name}"
+                                 class="product-image">
+
+
+                            <div th:unless="${product.imageUrl != null and !product.imageUrl.isEmpty()}"
+                                 class="no-image">
+
+                                Chưa có ảnh
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- CONTENT -->
+
+                        <div class="product-content">
+
+
+                            <h5 class="product-name"
+                                th:text="${product.name}">
+
+                                Tên sản phẩm
+
+                            </h5>
+
+
+                            <div class="product-price"
+                                 th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}">
+
+                                0 ₫
+
+                            </div>
+
+
+                            <div class="product-stock">
+
+                                <span th:if="${product.stock > 0}">
+                                    Còn
+                                    <strong th:text="${product.stock}">
+                                        0
+                                    </strong>
+                                    sản phẩm
+                                </span>
+
+                                <span th:if="${product.stock <= 0}"
+                                      class="text-danger">
+
+                                    Hết hàng
+
+                                </span>
+
+                            </div>
+
+
+                            <div class="product-info">
+
+                                <span class="product-info-item">
+                                    ✓ Chính hãng
+                                </span>
+
+                                <span class="product-info-item">
+                                    ✓ Bảo hành
+                                </span>
+
+                            </div>
+
+
+                            <a th:href="@{/products/{id}(id=${product.id})}"
+                               class="btn product-btn product-btn-outline">
+
+                                Xem chi tiết
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <p th:if="${#lists.isEmpty(cheapProducts)}"
+               class="text-muted mt-3 mb-0">
+
+                Chưa có sản phẩm giá tốt.
+
+            </p>
+
         </div>
+
     </div>
+
 </div>
 
+
 <div th:replace="~{fragments/footer :: footer}"></div>
+
 </body>
 </html>

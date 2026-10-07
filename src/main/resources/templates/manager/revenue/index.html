@@ -10,7 +10,7 @@
 
     body {
         font-family: "Segoe UI", Arial, sans-serif;
-        background: #f4f7fb;
+        background: #f4f8fb;
         color: #334155;
         min-height: 100vh;
     }
@@ -26,22 +26,24 @@
     ========================= */
 
     .header {
-        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        background: linear-gradient(135deg, #2563eb, #0ea5e9);
         color: white;
         padding: 30px 35px;
         border-radius: 16px;
-        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.2);
+        box-shadow: 0 8px 25px rgba(37, 99, 235, 0.20);
         margin-bottom: 20px;
     }
 
     .header h1 {
         font-size: 29px;
+        font-weight: 700;
         margin-bottom: 7px;
     }
 
     .header p {
-        color: #e0e7ff;
+        color: #dbeafe;
         font-size: 14px;
+        line-height: 1.5;
     }
 
     /* =========================
@@ -53,21 +55,26 @@
     }
 
     .back-btn {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         padding: 10px 17px;
         background: white;
-        color: #4f46e5;
-        border: 1px solid #e5e7eb;
+        color: #2563eb;
+        border: 1px solid #dbe3ef;
         border-radius: 8px;
         text-decoration: none;
         font-size: 14px;
         font-weight: 600;
-        transition: 0.2s;
+        transition: all 0.2s ease;
     }
 
     .back-btn:hover {
-        background: #4f46e5;
+        background: #2563eb;
         color: white;
+        border-color: #2563eb;
+        transform: translateY(-1px);
+        box-shadow: 0 5px 12px rgba(37, 99, 235, 0.18);
     }
 
     /* =========================
@@ -76,7 +83,7 @@
 
     .filter-card {
         background: white;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e2e8f0;
         border-radius: 16px;
         padding: 25px;
         margin-bottom: 25px;
@@ -112,37 +119,45 @@
     input[type="date"] {
         min-width: 190px;
         padding: 11px 13px;
-        border: 1px solid #d1d5db;
+        border: 1px solid #cbd5e1;
         border-radius: 8px;
         background: white;
         color: #334155;
         font-family: inherit;
         font-size: 14px;
         outline: none;
-        transition: 0.2s;
+        transition: all 0.2s ease;
+    }
+
+    input[type="date"]:hover {
+        border-color: #93c5fd;
     }
 
     input[type="date"]:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
     }
 
     .submit-btn {
         padding: 11px 22px;
         border: none;
         border-radius: 8px;
-        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        background: linear-gradient(135deg, #2563eb, #0ea5e9);
         color: white;
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        transition: 0.2s;
+        transition: all 0.2s ease;
     }
 
     .submit-btn:hover {
-        background: linear-gradient(135deg, #4338ca, #4f46e5);
+        background: linear-gradient(135deg, #1d4ed8, #0284c7);
         transform: translateY(-1px);
-        box-shadow: 0 5px 15px rgba(79, 70, 229, 0.25);
+        box-shadow: 0 5px 15px rgba(37, 99, 235, 0.25);
+    }
+
+    .submit-btn:active {
+        transform: translateY(0);
     }
 
     /* =========================
@@ -160,17 +175,23 @@
         background: white;
         border-radius: 15px;
         padding: 23px;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e2e8f0;
         box-shadow: 0 5px 20px rgba(15, 23, 42, 0.05);
         position: relative;
         overflow: hidden;
+        transition: all 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(15, 23, 42, 0.08);
     }
 
     .stat-card::after {
         content: "";
         position: absolute;
-        width: 80px;
-        height: 80px;
+        width: 85px;
+        height: 85px;
         border-radius: 50%;
         right: -25px;
         top: -25px;
@@ -202,65 +223,85 @@
         font-weight: 750;
     }
 
-    /* Revenue */
+    /* =========================
+       REVENUE
+    ========================= */
+
     .revenue-card {
-        color: #4f46e5;
+        color: #2563eb;
     }
 
     .revenue-card .stat-icon {
-        background: #eef2ff;
+        background: #eff6ff;
+        color: #2563eb;
     }
 
     .revenue-card .stat-value {
-        color: #4f46e5;
+        color: #2563eb;
     }
 
-    /* Total revenue */
+    /* =========================
+       TOTAL REVENUE
+    ========================= */
+
     .total-card {
-        color: #0891b2;
+        color: #0284c7;
     }
 
     .total-card .stat-icon {
-        background: #ecfeff;
+        background: #e0f2fe;
+        color: #0284c7;
     }
 
     .total-card .stat-value {
-        color: #0891b2;
+        color: #0284c7;
     }
 
-    /* Orders */
+    /* =========================
+       ORDERS
+    ========================= */
+
     .orders-card {
-        color: #7c3aed;
+        color: #0f766e;
     }
 
     .orders-card .stat-icon {
-        background: #f5f3ff;
+        background: #f0fdfa;
+        color: #0f766e;
     }
 
     .orders-card .stat-value {
-        color: #7c3aed;
+        color: #0f766e;
     }
 
-    /* Delivered */
+    /* =========================
+       DELIVERED
+    ========================= */
+
     .delivered-card {
         color: #059669;
     }
 
     .delivered-card .stat-icon {
         background: #ecfdf5;
+        color: #059669;
     }
 
     .delivered-card .stat-value {
         color: #059669;
     }
 
-    /* Cancelled */
+    /* =========================
+       CANCELLED
+    ========================= */
+
     .cancelled-card {
         color: #dc2626;
     }
 
     .cancelled-card .stat-icon {
         background: #fef2f2;
+        color: #dc2626;
     }
 
     .cancelled-card .stat-value {
@@ -273,7 +314,7 @@
 
     .summary-card {
         background: white;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e2e8f0;
         border-radius: 16px;
         padding: 25px;
         box-shadow: 0 5px 20px rgba(15, 23, 42, 0.06);
@@ -284,6 +325,8 @@
         font-weight: 700;
         color: #1e293b;
         margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #eef2f7;
     }
 
     .summary-list {
@@ -309,7 +352,7 @@
     }
 
     .summary-value {
-        color: #1e293b;
+        color: #2563eb;
         font-size: 15px;
         font-weight: 700;
     }
@@ -327,9 +370,11 @@
     ========================= */
 
     @media (max-width: 900px) {
+
         .stats-grid {
             grid-template-columns: repeat(2, 1fr);
         }
+
     }
 
     @media (max-width: 600px) {
@@ -341,15 +386,21 @@
 
         .header {
             padding: 23px;
+            border-radius: 14px;
         }
 
         .header h1 {
             font-size: 24px;
         }
 
+        .header p {
+            font-size: 13px;
+        }
+
         .filter-card,
         .summary-card {
             padding: 20px;
+            border-radius: 14px;
         }
 
         .filter-form {
@@ -357,8 +408,13 @@
             align-items: stretch;
         }
 
+        .form-group {
+            width: 100%;
+        }
+
         input[type="date"] {
             width: 100%;
+            min-width: 0;
         }
 
         .submit-btn {
@@ -367,6 +423,10 @@
 
         .stats-grid {
             grid-template-columns: 1fr;
+        }
+
+        .stat-card {
+            padding: 20px;
         }
 
         .stat-value {
@@ -380,7 +440,40 @@
         .summary-value {
             text-align: right;
         }
+
     }
+
+    @media (max-width: 400px) {
+
+        .container {
+            width: 96%;
+            margin: 15px auto;
+        }
+
+        .header {
+            padding: 20px;
+        }
+
+        .header h1 {
+            font-size: 21px;
+        }
+
+        .filter-card,
+        .summary-card {
+            padding: 18px;
+        }
+
+        .stat-card {
+            padding: 18px;
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+        }
+
+    }
+
   </style>
 
 </head> <body> <div class="container">

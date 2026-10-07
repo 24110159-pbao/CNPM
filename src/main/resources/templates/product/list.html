@@ -27,6 +27,26 @@
                 <span class="text-muted" th:text="${products.totalElements} + ' sản phẩm'"></span>
             </div>
 
+            <form th:if="${category != null}" method="get"
+                  th:action="@{/categories/{id}(id=${category.id})}"
+                  class="row g-2 align-items-end mb-4">
+                <div class="col-sm-4 col-md-3">
+                    <label for="min-price" class="form-label">Giá từ</label>
+                    <input id="min-price" class="form-control" type="number" name="minPrice"
+                           min="0" step="1000" th:value="${minPrice}" placeholder="Không giới hạn">
+                </div>
+                <div class="col-sm-4 col-md-3">
+                    <label for="max-price" class="form-label">Đến giá</label>
+                    <input id="max-price" class="form-control" type="number" name="maxPrice"
+                           min="0" step="1000" th:value="${maxPrice}" placeholder="Không giới hạn">
+                </div>
+                <div class="col-sm-4 col-md-auto d-flex gap-2">
+                    <button class="btn btn-primary" type="submit">Lọc giá</button>
+                    <a class="btn btn-outline-secondary" th:href="@{/categories/{id}(id=${category.id})}">Xóa lọc</a>
+                </div>
+            </form>
+            <div th:if="${priceFilterError}" class="alert alert-warning" th:text="${priceFilterError}"></div>
+
             <div class="row row-cols-1 row-cols-md-3 g-4">
                 <div class="col" th:each="product : ${products.content}">
                     <div class="card h-100 shadow-sm">
@@ -52,13 +72,16 @@
             <nav th:if="${products.totalPages > 1}" class="mt-4">
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:classappend="${products.first} ? 'disabled'">
-                        <a class="page-link" th:href="@{/products(page=${products.number - 1}, keyword=${keyword})}">&laquo;</a>
+                        <a th:if="${category != null}" class="page-link" th:href="@{/categories/{id}(id=${category.id}, page=${products.number - 1}, minPrice=${minPrice}, maxPrice=${maxPrice})}">&laquo;</a>
+                        <a th:if="${category == null}" class="page-link" th:href="@{/products(page=${products.number - 1}, keyword=${keyword})}">&laquo;</a>
                     </li>
                     <li class="page-item" th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}" th:classappend="${i == products.number} ? 'active'">
-                        <a class="page-link" th:href="@{/products(page=${i}, keyword=${keyword})}" th:text="${i + 1}">1</a>
+                        <a th:if="${category != null}" class="page-link" th:href="@{/categories/{id}(id=${category.id}, page=${i}, minPrice=${minPrice}, maxPrice=${maxPrice})}" th:text="${i + 1}">1</a>
+                        <a th:if="${category == null}" class="page-link" th:href="@{/products(page=${i}, keyword=${keyword})}" th:text="${i + 1}">1</a>
                     </li>
                     <li class="page-item" th:classappend="${products.last} ? 'disabled'">
-                        <a class="page-link" th:href="@{/products(page=${products.number + 1}, keyword=${keyword})}">&raquo;</a>
+                        <a th:if="${category != null}" class="page-link" th:href="@{/categories/{id}(id=${category.id}, page=${products.number + 1}, minPrice=${minPrice}, maxPrice=${maxPrice})}">&raquo;</a>
+                        <a th:if="${category == null}" class="page-link" th:href="@{/products(page=${products.number + 1}, keyword=${keyword})}">&raquo;</a>
                     </li>
                 </ul>
             </nav>

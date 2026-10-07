@@ -13,9 +13,13 @@ public class GeminiConfig {
 	}
 
 	@Bean
-	public RestClient geminiRestClient(RestClient.Builder builder) {
+	public RestClient geminiRestClient(
+			RestClient.Builder builder
+	) {
 		return builder
-				.baseUrl("https://generativelanguage.googleapis.com")
+				.baseUrl(
+						"https://generativelanguage.googleapis.com"
+				)
 				.build();
 	}
 }

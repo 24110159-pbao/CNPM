@@ -8,7 +8,7 @@
 
     body {
         font-family: "Segoe UI", Arial, sans-serif;
-        background: #f4f7fb;
+        background: #f4f8fc;
         color: #334155;
         min-height: 100vh;
     }
@@ -19,13 +19,15 @@
         margin: 40px auto;
     }
 
-    /* Header */
+    /* =========================
+       HEADER
+    ========================= */
     .header {
-        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        background: linear-gradient(135deg, #2563eb, #0284c7);
         color: white;
         padding: 28px 35px;
         border-radius: 16px;
-        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.2);
+        box-shadow: 0 8px 25px rgba(37, 99, 235, 0.20);
         margin-bottom: 20px;
     }
 
@@ -35,11 +37,13 @@
     }
 
     .header p {
-        color: #e0e7ff;
+        color: #dbeafe;
         font-size: 14px;
     }
 
-    /* Navigation */
+    /* =========================
+       NAVIGATION
+    ========================= */
     .navigation {
         margin-bottom: 20px;
     }
@@ -50,19 +54,22 @@
         padding: 10px 17px;
         border-radius: 8px;
         background: white;
-        color: #4f46e5;
-        border: 1px solid #e5e7eb;
+        color: #2563eb;
+        border: 1px solid #dbeafe;
         font-size: 14px;
         font-weight: 600;
-        transition: 0.2s;
+        transition: 0.2s ease;
     }
 
     .dashboard-btn:hover {
-        background: #4f46e5;
+        background: #2563eb;
         color: white;
+        border-color: #2563eb;
     }
 
-    /* Alert */
+    /* =========================
+       ALERT
+    ========================= */
     .alert-success {
         background: #ecfdf5;
         color: #047857;
@@ -74,10 +81,12 @@
         font-weight: 500;
     }
 
-    /* Filter */
+    /* =========================
+       FILTER
+    ========================= */
     .filter-card {
         background: white;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e2e8f0;
         border-radius: 16px;
         padding: 22px;
         margin-bottom: 20px;
@@ -105,7 +114,7 @@
     }
 
     .form-group label {
-        color: #64748b;
+        color: #475569;
         font-size: 13px;
         font-weight: 600;
     }
@@ -115,18 +124,19 @@
         width: 100%;
         height: 42px;
         padding: 0 12px;
-        border: 1px solid #d1d5db;
+        border: 1px solid #cbd5e1;
         border-radius: 8px;
         background: white;
-        color: #374151;
+        color: #334155;
         font-size: 14px;
         outline: none;
+        transition: 0.2s ease;
     }
 
     .filter-form select:focus,
     .filter-form input:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
     }
 
     .filter-btn {
@@ -134,15 +144,17 @@
         padding: 0 20px;
         border: none;
         border-radius: 8px;
-        background: #4f46e5;
+        background: #2563eb;
         color: white;
         font-weight: 600;
         cursor: pointer;
-        transition: 0.2s;
+        transition: 0.2s ease;
     }
 
     .filter-btn:hover {
-        background: #4338ca;
+        background: #1d4ed8;
+        transform: translateY(-1px);
+        box-shadow: 0 5px 12px rgba(37, 99, 235, 0.20);
     }
 
     .clear-filter {
@@ -158,7 +170,9 @@
         text-decoration: underline;
     }
 
-    /* Active filters */
+    /* =========================
+       ACTIVE FILTERS
+    ========================= */
     .active-filters {
         display: flex;
         flex-wrap: wrap;
@@ -169,18 +183,21 @@
     }
 
     .filter-badge {
-        background: #eef2ff;
-        color: #4f46e5;
+        background: #eff6ff;
+        color: #2563eb;
         padding: 6px 10px;
         border-radius: 6px;
         font-size: 12px;
         font-weight: 600;
+        border: 1px solid #dbeafe;
     }
 
-    /* Table */
+    /* =========================
+       TABLE CARD
+    ========================= */
     .table-card {
         background: white;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #e2e8f0;
         border-radius: 16px;
         padding: 25px;
         box-shadow: 0 5px 20px rgba(15, 23, 42, 0.06);
@@ -215,17 +232,17 @@
     }
 
     thead {
-        background: #f8fafc;
+        background: #eff6ff;
     }
 
     th {
         text-align: left;
         padding: 14px;
-        color: #64748b;
+        color: #475569;
         font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 0.4px;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid #dbeafe;
         white-space: nowrap;
     }
 
@@ -237,19 +254,22 @@
     }
 
     tbody tr {
-        transition: 0.2s;
+        transition: 0.2s ease;
     }
 
     tbody tr:hover {
-        background: #f8fafc;
+        background: #f8fbff;
     }
 
     tbody tr:last-child td {
         border-bottom: none;
     }
 
+    /* =========================
+       ORDER ID
+    ========================= */
     .order-id {
-        color: #4f46e5;
+        color: #2563eb;
         font-weight: 700;
     }
 
@@ -257,11 +277,17 @@
         color: #475569;
     }
 
+    /* =========================
+       AMOUNT
+    ========================= */
     .amount {
         color: #dc2626;
         font-weight: 700;
     }
 
+    /* =========================
+       PAYMENT
+    ========================= */
     .payment {
         display: inline-block;
         background: #eff6ff;
@@ -270,42 +296,59 @@
         border-radius: 6px;
         font-size: 12px;
         font-weight: 600;
+        border: 1px solid #dbeafe;
     }
 
+    /* =========================
+       STATUS
+    ========================= */
     .status {
         display: inline-block;
         padding: 6px 10px;
         border-radius: 20px;
-        background: #eef2ff;
-        color: #4f46e5;
+        background: #eff6ff;
+        color: #2563eb;
         font-size: 11px;
         font-weight: 700;
         white-space: nowrap;
+        border: 1px solid #dbeafe;
     }
 
+    /* =========================
+       DATE
+    ========================= */
     .date {
         color: #64748b;
         white-space: nowrap;
         font-size: 13px;
     }
 
+    /* =========================
+       VIEW BUTTON
+    ========================= */
     .view-btn {
         display: inline-block;
         padding: 7px 12px;
-        background: #eef2ff;
-        color: #4f46e5;
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #dbeafe;
         border-radius: 7px;
         text-decoration: none;
         font-size: 13px;
         font-weight: 600;
-        transition: 0.2s;
+        transition: 0.2s ease;
     }
 
     .view-btn:hover {
-        background: #4f46e5;
+        background: #2563eb;
         color: white;
+        border-color: #2563eb;
+        transform: translateY(-1px);
     }
 
+    /* =========================
+       EMPTY
+    ========================= */
     .empty {
         text-align: center;
         padding: 45px !important;
@@ -313,7 +356,9 @@
         font-style: italic;
     }
 
-    /* Pagination */
+    /* =========================
+       PAGINATION
+    ========================= */
     .pagination {
         display: flex;
         justify-content: center;
@@ -331,25 +376,31 @@
         text-decoration: none;
         background: white;
         color: #64748b;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #cbd5e1;
         border-radius: 7px;
         font-size: 14px;
         font-weight: 600;
-        transition: 0.2s;
+        transition: 0.2s ease;
     }
 
     .page-link:hover {
-        background: #eef2ff;
-        color: #4f46e5;
+        background: #eff6ff;
+        color: #2563eb;
+        border-color: #93c5fd;
     }
 
     .page-link.active {
-        background: #4f46e5;
+        background: #2563eb;
         color: white;
-        border-color: #4f46e5;
+        border-color: #2563eb;
+        box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
     }
 
+    /* =========================
+       RESPONSIVE
+    ========================= */
     @media (max-width: 850px) {
+
         .container {
             width: 94%;
             margin: 20px auto;

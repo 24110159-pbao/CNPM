@@ -2,12 +2,11 @@ package com.example.ecommerce.ai.service;
 
 import com.example.ecommerce.ai.dto.AiChatResponse;
 import com.example.ecommerce.ai.dto.SqlQueryResult;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.util.regex.Pattern;
@@ -26,7 +25,9 @@ public class AdminAiService {
 			"Không thể truy vấn dữ liệu hệ thống lúc này.";
 
 	private static final Pattern SQL_FENCE_START =
-			Pattern.compile("(?is)^```(?:sql)?\\s*");
+			Pattern.compile(
+					"(?is)^```(?:sql)?\\s*"
+			);
 
 	private final GeminiService geminiService;
 
@@ -347,10 +348,10 @@ public class AdminAiService {
 		} catch (Exception exception) {
 
 			log.warn(
-					"Manager AI request failed: {}",
+					"Manager AI request failed: {} - {}",
+					exception.getClass().getSimpleName(),
+					exception.getMessage(),
 					exception
-							.getClass()
-							.getSimpleName()
 			);
 
 			return new AiChatResponse(
@@ -389,7 +390,7 @@ public class AdminAiService {
 
 	private String toJson(
 			SqlQueryResult result
-	) throws JsonProcessingException {
+	) {
 
 		return objectMapper.writeValueAsString(
 				result.rows()

@@ -1,5 +1,17 @@
-<!DOCTYPE html> <html xmlns:th="http://www.thymeleaf.org"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Mã giảm giá - Manager</title>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Mã giảm giá - Manager</title>
+
   <style>
+
     * {
         margin: 0;
         padding: 0;
@@ -8,7 +20,7 @@
 
     body {
         font-family: "Segoe UI", Arial, sans-serif;
-        background: #f4f7fb;
+        background: #f5f5f5;
         color: #333;
         min-height: 100vh;
     }
@@ -19,142 +31,260 @@
         margin: 40px auto;
     }
 
-    /* Header */
+
+    /* =====================================================
+       HEADER - XANH
+    ===================================================== */
+
     .header {
-        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        background: linear-gradient(
+            135deg,
+            #0874e9,
+            #0056c9
+        );
+
         color: white;
+
         padding: 30px 35px;
-        border-radius: 16px;
-        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.2);
+
+        border-radius: 12px;
+
+        box-shadow:
+            0 8px 25px rgba(0, 86, 201, 0.20);
+
         margin-bottom: 25px;
     }
 
     .header h1 {
         font-size: 28px;
         margin-bottom: 7px;
+        font-weight: 700;
     }
 
     .header p {
-        color: #e0e7ff;
+        color: rgba(255, 255, 255, 0.9);
         font-size: 14px;
     }
 
-    /* Back button */
+
+    /* =====================================================
+       BACK BUTTON
+    ===================================================== */
+
     .back-link {
         display: inline-block;
+
         text-decoration: none;
-        color: #4f46e5;
+
+        color: #0874e9;
+
         background: white;
-        border: 1px solid #e5e7eb;
+
+        border: 1px solid #dbeafe;
+
         padding: 10px 18px;
+
         border-radius: 8px;
+
         font-weight: 600;
+
         margin-bottom: 20px;
+
         transition: 0.2s;
     }
 
     .back-link:hover {
-        background: #4f46e5;
+        background: #0874e9;
         color: white;
+
+        border-color: #0874e9;
+
         transform: translateY(-1px);
+
+        box-shadow:
+            0 5px 12px rgba(8, 116, 233, 0.20);
     }
 
-    /* Card */
+
+    /* =====================================================
+       FORM CARD
+    ===================================================== */
+
     .form-card {
         background: white;
-        border-radius: 16px;
+
+        border-radius: 12px;
+
         padding: 30px;
-        box-shadow: 0 5px 20px rgba(15, 23, 42, 0.07);
+
+        box-shadow:
+            0 5px 20px rgba(15, 23, 42, 0.06);
+
         border: 1px solid #e5e7eb;
     }
 
     .form-card h2 {
         font-size: 20px;
+
         margin-bottom: 25px;
+
         color: #1f2937;
     }
 
-    /* Alert */
+
+    /* =====================================================
+       ALERT
+    ===================================================== */
+
     .alert-error {
         background: #fef2f2;
+
         color: #dc2626;
+
         border: 1px solid #fecaca;
+
         padding: 13px 16px;
+
         border-radius: 9px;
+
         margin-bottom: 20px;
+
         font-size: 14px;
     }
 
-    /* Form */
+
+    /* =====================================================
+       FORM
+    ===================================================== */
+
     .form-group {
         margin-bottom: 20px;
     }
 
     label {
         display: block;
+
         font-size: 14px;
+
         font-weight: 600;
+
         color: #374151;
+
         margin-bottom: 8px;
     }
 
     input {
         width: 100%;
+
         padding: 12px 14px;
+
         border: 1px solid #d1d5db;
-        border-radius: 9px;
+
+        border-radius: 8px;
+
         outline: none;
+
         font-size: 14px;
+
         color: #374151;
+
         background: #fff;
+
         transition: all 0.2s ease;
     }
 
     input:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        border-color: #0874e9;
+
+        box-shadow:
+            0 0 0 3px rgba(8, 116, 233, 0.12);
     }
 
     input::placeholder {
         color: #9ca3af;
     }
 
+
+    /* =====================================================
+       INPUT HINT
+    ===================================================== */
+
     .input-hint {
         display: block;
+
         margin-top: 6px;
+
         color: #94a3b8;
+
         font-size: 12px;
     }
 
-    /* Two columns */
+
+    /* =====================================================
+       TWO COLUMNS
+    ===================================================== */
+
     .form-row {
         display: grid;
+
         grid-template-columns: 1fr 1fr;
+
         gap: 18px;
     }
 
-    /* Submit */
+
+    /* =====================================================
+       SUBMIT BUTTON - XANH
+    ===================================================== */
+
     .submit-btn {
         width: 100%;
+
         border: none;
-        background: linear-gradient(135deg, #4f46e5, #6366f1);
+
+        background: linear-gradient(
+            135deg,
+            #0874e9,
+            #0056c9
+        );
+
         color: white;
+
         padding: 13px;
-        border-radius: 9px;
+
+        border-radius: 8px;
+
         font-size: 15px;
+
         font-weight: 600;
+
         cursor: pointer;
+
         transition: 0.2s;
+
         margin-top: 8px;
     }
 
     .submit-btn:hover {
-        background: linear-gradient(135deg, #4338ca, #4f46e5);
+        background: linear-gradient(
+            135deg,
+            #0056c9,
+            #0046a8
+        );
+
         transform: translateY(-1px);
-        box-shadow: 0 5px 15px rgba(79, 70, 229, 0.25);
+
+        box-shadow:
+            0 5px 15px rgba(8, 116, 233, 0.25);
     }
 
+
+    /* =====================================================
+       RESPONSIVE
+    ===================================================== */
+
     @media (max-width: 600px) {
+
         .container {
             width: 94%;
             margin: 20px auto;
@@ -176,25 +306,66 @@
             grid-template-columns: 1fr;
             gap: 0;
         }
+
     }
+
   </style>
 
-</head> <body> <div class="container">
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+  <!-- =====================================================
+       HEADER
+  ===================================================== -->
+
   <div class="header">
-    <h1 th:text="${discount != null} ? 'Sửa mã giảm giá' : 'Thêm mã giảm giá'">
+
+    <h1 th:text="${discount != null}
+            ? 'Sửa mã giảm giá'
+            : 'Thêm mã giảm giá'">
+
       Form mã giảm giá
+
     </h1>
-    <p>Quản lý thông tin và thời gian sử dụng mã giảm giá</p>
+
+    <p>
+      Quản lý thông tin và thời gian sử dụng mã giảm giá
+    </p>
+
   </div>
 
-  <a href="/manager/discounts" class="back-link">
+
+  <!-- =====================================================
+       BACK
+  ===================================================== -->
+
+  <a href="/manager/discounts"
+     class="back-link">
+
     ← Quay lại danh sách
+
   </a>
+
+
+  <!-- =====================================================
+       ERROR
+  ===================================================== -->
 
   <div th:if="${error}"
        class="alert-error"
        th:text="${error}">
+
   </div>
+
+
+  <!-- =====================================================
+       FORM CARD
+  ===================================================== -->
 
   <div class="form-card">
 
@@ -202,11 +373,21 @@
       🎟️ Thông tin mã giảm giá
     </h2>
 
-    <form th:action="${discount != null} ? @{/manager/discounts/{id}/edit(id=${discount.id})} : @{/manager/discounts/create}"
+
+    <form th:action="${discount != null}
+            ? @{/manager/discounts/{id}/edit(id=${discount.id})}
+            : @{/manager/discounts/create}"
+
           method="post">
 
+
+      <!-- CODE -->
+
       <div class="form-group">
-        <label for="code">Mã code</label>
+
+        <label for="code">
+          Mã code
+        </label>
 
         <input type="text"
                id="code"
@@ -217,13 +398,18 @@
                style="text-transform:uppercase">
 
         <span class="input-hint">
-                Mã giảm giá nên viết bằng chữ in hoa.
-            </span>
+                    Mã giảm giá nên viết bằng chữ in hoa.
+                </span>
+
       </div>
+
+
+      <!-- DISCOUNT + QUANTITY -->
 
       <div class="form-row">
 
         <div class="form-group">
+
           <label for="discountValue">
             Giảm giá (%)
           </label>
@@ -236,9 +422,12 @@
                  placeholder="Ví dụ: 20"
                  required
                  th:value="${discount?.discountValue}">
+
         </div>
 
+
         <div class="form-group">
+
           <label for="quantity">
             Số lượng
           </label>
@@ -250,13 +439,18 @@
                  placeholder="Ví dụ: 100"
                  required
                  th:value="${discount?.quantity}">
+
         </div>
 
       </div>
 
+
+      <!-- START + END -->
+
       <div class="form-row">
 
         <div class="form-group">
+
           <label for="startAt">
             Ngày bắt đầu
           </label>
@@ -265,10 +459,18 @@
                  id="startAt"
                  name="startAt"
                  required
-                 th:value="${discount?.startAt != null} ? ${#temporals.format(discount.startAt, 'yyyy-MM-dd''T''HH:mm')} : ''">
+                 th:value="${discount?.startAt != null}
+                               ? ${#temporals.format(
+                                   discount.startAt,
+                                   'yyyy-MM-dd''T''HH:mm'
+                               )}
+                               : ''">
+
         </div>
 
+
         <div class="form-group">
+
           <label for="endAt">
             Ngày kết thúc
           </label>
@@ -277,19 +479,39 @@
                  id="endAt"
                  name="endAt"
                  required
-                 th:value="${discount?.endAt != null} ? ${#temporals.format(discount.endAt, 'yyyy-MM-dd''T''HH:mm')} : ''">
+                 th:value="${discount?.endAt != null}
+                               ? ${#temporals.format(
+                                   discount.endAt,
+                                   'yyyy-MM-dd''T''HH:mm'
+                               )}
+                               : ''">
+
         </div>
 
       </div>
 
+
+      <!-- SUBMIT -->
+
       <button type="submit"
               class="submit-btn"
-              th:text="${discount != null} ? '✓ Cập nhật mã giảm giá' : '+ Tạo mã giảm giá'">
+
+              th:text="${discount != null}
+                        ? '✓ Cập nhật mã giảm giá'
+                        : '+ Tạo mã giảm giá'">
+
         Lưu
+
       </button>
+
 
     </form>
 
   </div>
 
-</div> </body> </html>
+
+</div>
+
+</body>
+
+</html>
