@@ -193,16 +193,15 @@
                 </li>
 
                 <!-- USER + MANAGER -->
-                <li class="nav-item"
+                <li class="nav-item d-flex align-items-center"
                     sec:authorize="isAuthenticated()">
 
                     <form th:action="@{/auth/logout}"
                           method="post"
-                          class="d-inline">
+                          class="m-0">
 
                         <button type="submit"
-                                class="btn btn-link nav-link text-white fw-semibold p-0 d-inline">
-
+                                class="nav-link text-white fw-semibold border-0 bg-transparent">
                             Đăng xuất
 
                         </button>

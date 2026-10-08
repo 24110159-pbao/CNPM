@@ -508,6 +508,12 @@
   <a href="/manager/orders" class="back-link">
     ← Danh sách đơn hàng
   </a>
+  <a th:href="@{/invoices/order/{id}(id=${order.id})}"
+     class="back-link"
+     style="margin-bottom: 0;"
+     target="_blank">
+    🖨 In hóa đơn
+  </a>
 
   <!-- Messages -->
   <div th:if="${success}"

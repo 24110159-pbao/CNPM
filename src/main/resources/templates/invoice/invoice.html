@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8"/>
+
+    <title>Invoice - E-Commerce</title>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 25px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            color: #222;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+        }
+
+        .invoice-container {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .store-name {
+            font-size: 25px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 8px;
+        }
+
+        .store-info {
+            color: #555;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .invoice-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0 5px;
+            color: #1e293b;
+        }
+
+        .invoice-subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        .order-info {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .order-info td {
+            padding: 6px 0;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #475569;
+        }
+
+        .status {
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .customer-box,
+        .payment-box {
+            border: 1px solid #dbe3ef;
+            padding: 14px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #1e3a5f;
+            margin-bottom: 10px;
+        }
+
+        .customer-info {
+            line-height: 1.8;
+        }
+
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .product-table th {
+            background: #2563eb;
+            color: white;
+            border: 1px solid #2563eb;
+            padding: 9px 7px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .product-table td {
+            border: 1px solid #dbe3ef;
+            padding: 9px 7px;
+            font-size: 12px;
+        }
+
+        .product-name {
+            font-weight: bold;
+            color: #334155;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .empty {
+            text-align: center;
+            color: #94a3b8;
+            padding: 20px;
+        }
+
+        .summary {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .summary td {
+            padding: 7px;
+        }
+
+        .summary-label {
+            width: 75%;
+            text-align: right;
+            font-weight: bold;
+            color: #475569;
+        }
+
+        .discount {
+            color: #059669;
+        }
+
+        .final-total {
+            border-top: 2px solid #2563eb;
+            font-size: 17px;
+            font-weight: bold;
+            color: #dc2626;
+            padding-top: 12px !important;
+        }
+
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .payment-table td {
+            padding: 6px 0;
+        }
+
+        .payment-label {
+            width: 35%;
+            font-weight: bold;
+            color: #64748b;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 35px;
+            padding-top: 15px;
+            border-top: 1px solid #dbe3ef;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .thank-you {
+            font-size: 15px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="invoice-container">
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div class="store-name">
+            ECOMMERCE SHOP
+        </div>
+
+        <div class="store-info">
+            Address: KTX Area B, National University<br/>
+            Phone: 0909 123 456<br/>
+            Email: admin@gmail.com
+        </div>
+
+    </div>
+
+    <!-- TITLE -->
+
+    <div class="invoice-title">
+        SALES INVOICE
+    </div>
+
+    <div class="invoice-subtitle">
+        Order Information
+    </div>
+
+    <!-- ORDER -->
+
+    <table class="order-info">
+
+        <tr>
+
+            <td>
+                <span class="label">
+                    Order ID:
+                </span>
+
+                <span th:text="${order.id}">
+                    1
+                </span>
+            </td>
+
+            <td class="right">
+
+                <span class="label">
+                    Order Date:
+                </span>
+
+                <span
+                        th:if="${order.createdAt != null}"
+                        th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">
+                    -
+                </span>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>
+
+                <span class="label">
+                    Status:
+                </span>
+
+                <span
+                        class="status"
+                        th:text="${order.status}">
+                    PENDING
+                </span>
+
+            </td>
+
+            <td class="right">
+
+                <span class="label">
+                    Discount Code:
+                </span>
+
+                <span
+                        th:text="${order.discountCode != null ? order.discountCode : '-'}">
+                    -
+                </span>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+    <!-- CUSTOMER -->
+
+    <div class="customer-box">
+
+        <div class="section-title">
+            CUSTOMER INFORMATION
+        </div>
+
+        <div class="customer-info">
+
+            <strong>Name:</strong>
+            <span th:text="${order.recipientName}">
+                John Doe
+            </span>
+
+            <br/>
+
+            <strong>Phone:</strong>
+            <span th:text="${order.recipientPhone}">
+                0909123456
+            </span>
+
+            <br/>
+
+            <strong>Shipping Address:</strong>
+            <span th:text="${order.shippingAddress}">
+                123 Nguyen Trai Street, District 1, Ho Chi Minh City
+            </span>
+
+        </div>
+
+    </div>
+
+    <!-- PRODUCTS -->
+
+    <div class="section-title">
+        PRODUCT DETAILS
+    </div>
+
+    <table class="product-table">
+
+        <thead>
+
+        <tr>
+
+            <th style="width: 7%;">
+                No.
+            </th>
+
+            <th style="width: 38%;">
+                Product
+            </th>
+
+            <th style="width: 12%;">
+                Quantity
+            </th>
+
+            <th style="width: 20%;">
+                Unit Price
+            </th>
+
+            <th style="width: 23%;">
+                Total
+            </th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+
+        <tr th:each="item, stat : ${orderItems}">
+
+            <td
+                    class="text-center"
+                    th:text="${stat.count}">
+                1
+            </td>
+
+            <td class="product-name">
+
+                <span
+                        th:if="${item.product != null}"
+                        th:text="${item.product.name}">
+                    Product
+                </span>
+
+                <span th:if="${item.product == null}">
+                    Unknown Product
+                </span>
+
+            </td>
+
+            <td
+                    class="text-center"
+                    th:text="${item.quantity}">
+                1
+            </td>
+
+            <td class="text-right">
+
+                <span
+                        th:if="${item.price != null}"
+                        th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                    0 VND
+                </span>
+
+                <span th:if="${item.price == null}">
+                    0 VND
+                </span>
+
+            </td>
+
+            <td class="text-right">
+
+                <span
+                        th:if="${item.price != null and item.quantity != null}"
+                        th:text="${#numbers.formatDecimal(item.price * item.quantity, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                    0 VND
+                </span>
+
+                <span th:if="${item.price == null or item.quantity == null}">
+                    0 VND
+                </span>
+
+            </td>
+
+        </tr>
+
+        <tr th:if="${orderItems == null or #lists.isEmpty(orderItems)}">
+
+            <td colspan="5" class="empty">
+                No products found.
+            </td>
+
+        </tr>
+
+        </tbody>
+
+    </table>
+
+    <!-- SUMMARY -->
+
+    <table class="summary">
+
+        <tr>
+
+            <td class="summary-label">
+                Subtotal:
+            </td>
+
+            <td class="text-right">
+
+                <span
+                        th:if="${order.subtotal != null}"
+                        th:text="${#numbers.formatDecimal(order.subtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                    0 VND
+                </span>
+
+                <span th:if="${order.subtotal == null}">
+                    0 VND
+                </span>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td class="summary-label discount">
+                Discount:
+            </td>
+
+            <td class="text-right discount">
+
+                <span
+                        th:if="${order.discountAmount != null}"
+                        th:text="${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                    0 VND
+                </span>
+
+                <span th:if="${order.discountAmount == null}">
+                    0 VND
+                </span>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td class="summary-label final-total">
+                TOTAL:
+            </td>
+
+            <td class="text-right final-total">
+
+                <span
+                        th:if="${order.finalAmount != null}"
+                        th:text="${#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                    0 VND
+                </span>
+
+                <span th:if="${order.finalAmount == null}">
+                    0 VND
+                </span>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+    <!-- PAYMENT -->
+
+    <div class="payment-box">
+
+        <div class="section-title">
+            PAYMENT INFORMATION
+        </div>
+
+        <table class="payment-table">
+
+            <tr>
+
+                <td class="payment-label">
+                    Payment Method:
+                </td>
+
+                <td>
+                    COD
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <td class="payment-label">
+                    Payment Status:
+                </td>
+
+                <td>
+                    Not Available
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+    <!-- FOOTER -->
+
+    <div class="footer">
+
+        <div class="thank-you">
+            Thank you for your purchase!
+        </div>
+
+        <div>
+            This invoice was automatically generated by E-Commerce.
+        </div>
+
+        <div>
+            Please keep this invoice for future reference.
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
