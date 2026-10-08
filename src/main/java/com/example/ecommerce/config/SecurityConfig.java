@@ -100,7 +100,7 @@ public class SecurityConfig {
                         .loginProcessingUrl("/auth/login")
                         .usernameParameter("email")
                         .passwordParameter("password")
-                        .defaultSuccessUrl("/", false)
+                        .defaultSuccessUrl("/", true)
                         .permitAll()
                 )
 

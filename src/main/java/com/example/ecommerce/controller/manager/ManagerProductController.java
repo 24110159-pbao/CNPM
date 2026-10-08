@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Objects;
+
 @Controller
 @RequestMapping("/manager/products")
 @RequiredArgsConstructor
@@ -25,13 +27,15 @@ public class ManagerProductController {
 
     @GetMapping
     public String list(
+            @RequestParam(required = false) Long categoryId,
             @PageableDefault(size = 20) Pageable pageable,
             Model model) {
 
-        model.addAttribute(
-                "products",
-                productService.getAllProducts(pageable)
-        );
+        model.addAttribute("products", categoryId == null
+                ? productService.getAllProducts(pageable)
+                : productService.getProductsByCategory(categoryId, pageable));
+        model.addAttribute("categories", categoryService.getAllCategories());
+        model.addAttribute("selectedCategoryId", categoryId);
 
         return "manager/products/list";
     }

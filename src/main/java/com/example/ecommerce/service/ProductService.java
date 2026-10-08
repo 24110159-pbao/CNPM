@@ -46,6 +46,20 @@ public class ProductService {
         );
     }
 
+    public Page<Product> getProductsByCategoryAndPriceRange(
+            Long categoryId,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Pageable pageable
+    ) {
+        return productRepository.findActiveByCategoryAndPriceRange(
+                categoryId,
+                minPrice,
+                maxPrice,
+                pageable
+        );
+    }
+
     public Page<Product> searchProducts(
             String keyword,
             Pageable pageable
